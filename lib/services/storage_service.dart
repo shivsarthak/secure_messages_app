@@ -4,16 +4,20 @@ import 'package:secure_messages/models/conversation_model.dart';
 import 'package:sqflite/sqflite.dart';
 
 class StorageService with ChangeNotifier {
+  static final StorageService _instance = StorageService._internal();
   late Database db;
   List<Conversation> conversations = [];
-  StorageService() {
+  factory StorageService() {
+    return _instance;
+  }
+
+  StorageService._internal() {
     _init().then((value) async {
       db = value;
       conversations = await getConversations();
       notifyListeners();
     });
   }
-
   Future<Database> _init() async {
     var db = await openDatabase(
       'secure_messages.db',

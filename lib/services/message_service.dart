@@ -21,15 +21,17 @@ class MessageService {
       }
       _messages = Map<String, dynamic>.from(messages as Map);
       return Transaction.success(null);
-    });
-    if (_messages != null) {
-      _messages!.forEach((key, value) async {
-        Map<String, dynamic> json = jsonDecode(value);
-        ChatMessage msg = ChatMessage.fromJson(json);
+    }).then((value) {
+      if (_messages != null) {
+        _messages!.forEach((key, value) async {
+          print(value);
+          Map<String, dynamic> json = Map.from(value as Map);
+          ChatMessage msg = ChatMessage.fromJson(json);
 
-        await GetIt.I<StorageService>().addMessageToConversation(msg);
-      });
-    }
+          await StorageService().addMessageToConversation(msg);
+        });
+      }
+    });
   }
 
   Future<String?> sendMessage(ChatMessage message) async {
@@ -43,7 +45,7 @@ class MessageService {
         .ref()
         .child("users/${message.recieverUID}/new_messages/$messageID")
         .set(message.toJSON());
-    await GetIt.I<StorageService>().addMessageToConversation(message);
+    await StorageService().addMessageToConversation(message);
     return messageID;
   }
 
@@ -61,7 +63,7 @@ class MessageService {
           }
           Map<String, dynamic> json = Map.from(event.snapshot.value as Map);
           ChatMessage msg = ChatMessage.fromJson(json);
-          GetIt.I<StorageService>().addMessageToConversation(msg);
+          StorageService().addMessageToConversation(msg);
           return Transaction.success(null);
         });
       },

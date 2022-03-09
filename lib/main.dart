@@ -14,7 +14,6 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   GetIt.I.registerSingleton<AuthenticationService>(AuthenticationService());
-  GetIt.I.registerSingleton<StorageService>(StorageService());
   runApp(MyApp());
 }
 

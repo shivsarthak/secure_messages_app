@@ -19,7 +19,7 @@ class _NewConversationModalState extends State<NewConversationModal> {
   final nickField = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    StorageService store = GetIt.I<StorageService>();
+    StorageService store = StorageService();
 
     return AlertDialog(
       title: Text("Start a new conversation"),

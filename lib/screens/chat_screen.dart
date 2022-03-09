@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:secure_messages/enums/message_content_type.dart';
 import 'package:secure_messages/enums/message_type.dart';
@@ -36,6 +37,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Column _appBody(BuildContext context) {
     TextEditingController controller = TextEditingController();
+    final ChatService chatService =
+        Provider.of<ChatService>(context, listen: true);
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: <Widget>[
@@ -91,8 +94,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       timestamp: DateTime.now(),
                     );
                     controller.clear();
-                    Provider.of<ChatService>(context, listen: false)
-                        .sendMessage(message);
+                    chatService.sendMessage(message);
                   }
                 },
                 child: Icon(
@@ -185,6 +187,7 @@ class _ConversationSpace extends StatefulWidget {
 class _ConversationSpaceState extends State<_ConversationSpace> {
   @override
   Widget build(BuildContext context) {
+    final f = DateFormat('hh:mm a');
     return Expanded(
       child: Consumer<ChatService>(
         builder: (BuildContext context, service, Widget? child) {
@@ -220,7 +223,7 @@ class _ConversationSpaceState extends State<_ConversationSpace> {
                         ),
                       ),
                       Text(
-                        service.messages[index].timestamp.toString(),
+                        f.format(service.messages[index].timestamp),
                         style: TextStyle(fontSize: 12, color: Colors.grey[400]),
                       ),
                     ],
@@ -233,7 +236,7 @@ class _ConversationSpaceState extends State<_ConversationSpace> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        service.messages[index].timestamp.toString(),
+                        f.format(service.messages[index].timestamp),
                         style: TextStyle(fontSize: 12, color: Colors.grey[400]),
                       ),
                       ConstrainedBox(

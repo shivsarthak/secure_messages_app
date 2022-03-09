@@ -16,11 +16,11 @@ class ConversationsScreen extends StatefulWidget {
 
 class _ConversationsScreenState extends State<ConversationsScreen> {
   List<Conversation> _conversations = [];
-  late StorageService _store;
+  final StorageService _store = StorageService();
   @override
   void initState() {
     super.initState();
-    StorageService _store = GetIt.I<StorageService>();
+
     _store.addListener(() {
       setState(() {
         _conversations = _store.conversations;
@@ -30,7 +30,6 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _store = GetIt.I<StorageService>();
     return Scaffold(
       appBar: AppBar(
         title: Text("Conversations"),
