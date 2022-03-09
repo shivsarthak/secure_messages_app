@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 
 import 'package:secure_messages/models/conversation_model.dart';
+import 'package:secure_messages/models/user_model.dart';
 import 'package:secure_messages/screens/chat_screen.dart';
 import 'package:secure_messages/screens/widgets/new_conversation_modal.dart';
 import 'package:secure_messages/services/storage_service.dart';
@@ -14,7 +15,8 @@ class ConversationsScreen extends StatefulWidget {
   _ConversationsScreenState createState() => _ConversationsScreenState();
 }
 
-class _ConversationsScreenState extends State<ConversationsScreen> {
+class _ConversationsScreenState extends State<ConversationsScreen>
+    with AutomaticKeepAliveClientMixin {
   List<Conversation> _conversations = [];
   final StorageService _store = StorageService();
   @override
@@ -30,6 +32,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       appBar: AppBar(
         title: Text("Conversations"),
@@ -54,13 +57,21 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
           Icons.person_add,
           color: Colors.white,
         ),
-        onPressed: () {
-          showDialog(
-              context: context, builder: (context) => NewConversationModal());
+        onPressed: () async {
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (context) => QRScanScreen()))
+              .then((value) {
+            if (value.runtimeType == UserModel) {
+              confirmAddUserDialog(context, value);
+            }
+          });
         },
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class ConversationTile extends StatelessWidget {
@@ -74,14 +85,14 @@ class ConversationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       onLongPress: () {
-        GetIt.I<StorageService>().deleteConversation(conversation);
+        StorageService().deleteConversation(conversation);
       },
       onTap: () {
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => ChatScreen(conversation)));
       },
       leading: Icon(Icons.person),
-      title: Text(conversation.reciepientUID),
+      title: Text(conversation.recipientUID),
     );
   }
 }

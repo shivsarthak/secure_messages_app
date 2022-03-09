@@ -1,11 +1,11 @@
 class Conversation {
   final String conversationID;
-  final String reciepientUID;
+  final String recipientUID;
   final String? nickname;
 
   Conversation({
     required this.conversationID,
-    required this.reciepientUID,
+    required this.recipientUID,
     this.nickname,
   });
 
@@ -13,7 +13,7 @@ class Conversation {
     return Conversation(
       conversationID: map['conversationID'].toString(),
       nickname: map['nickname'].toString(),
-      reciepientUID: map['reciepientUID'].toString(),
+      recipientUID: map['recipientUID'].toString(),
     );
   }
 
@@ -21,7 +21,7 @@ class Conversation {
     Map<String, Object?> json = {
       'conversationID': conversationID,
       'nickname': nickname,
-      'reciepientUID': reciepientUID,
+      'recipientUID': recipientUID,
       'last_message': lastMessage,
     };
     return json;

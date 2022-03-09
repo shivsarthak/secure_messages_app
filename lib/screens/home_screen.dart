@@ -15,15 +15,34 @@ class _HomeScreenState extends State<HomeScreen> {
     ConversationsScreen(),
     ProfileScreen(),
   ];
+
+  final PageController _controller =
+      PageController(keepPage: true, initialPage: 0);
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() {
+      setState(() {
+        _currentIndex = _controller.page!.round();
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: PageView(
+        controller: _controller,
+        children: _screens,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         onTap: (value) {
           setState(() {
             _currentIndex = value;
           });
+          _controller.animateToPage(value,
+              duration: Duration(milliseconds: 300), curve: Curves.easeIn);
         },
         currentIndex: _currentIndex,
         items: [

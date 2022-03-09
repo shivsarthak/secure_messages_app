@@ -59,7 +59,7 @@ class ChatMessage {
     String uid = GetIt.I<AuthenticationService>().user!.uid;
     return ChatMessage(
       messageID: json['mid'],
-      conversationID: json['cid'],
+      conversationID: data['conversationID'].toString(),
       //TODO:Future
       contentType: MessageContentType.text,
       senderUID: json['suid'],
@@ -73,7 +73,6 @@ class ChatMessage {
   Map<String, dynamic> toLocalJSON() {
     Map<String, dynamic> messageData = {
       'mid': messageID,
-      'cid': conversationID,
       'timestamp': timestamp.toIso8601String(),
       'ctype': (contentType == MessageContentType.text) ? "TEXT" : "other",
       'suid': senderUID,
@@ -83,6 +82,7 @@ class ChatMessage {
     Map<String, dynamic> json = {
       'timestamp': timestamp.millisecondsSinceEpoch,
       'messageData': jsonEncode(messageData),
+      'conversationID': conversationID,
     };
 
     return json;

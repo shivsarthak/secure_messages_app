@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:firebase_database/firebase_database.dart';
 import 'package:get_it/get_it.dart';
 import 'package:secure_messages/models/chat_mesage_model.dart';
@@ -24,11 +22,10 @@ class MessageService {
     }).then((value) {
       if (_messages != null) {
         _messages!.forEach((key, value) async {
-          print(value);
           Map<String, dynamic> json = Map.from(value as Map);
           ChatMessage msg = ChatMessage.fromJson(json);
 
-          await StorageService().addMessageToConversation(msg);
+          await StorageService().storeMessage(msg);
         });
       }
     });
@@ -45,7 +42,7 @@ class MessageService {
         .ref()
         .child("users/${message.recieverUID}/new_messages/$messageID")
         .set(message.toJSON());
-    await StorageService().addMessageToConversation(message);
+    await StorageService().storeMessage(message);
     return messageID;
   }
 
@@ -63,7 +60,7 @@ class MessageService {
           }
           Map<String, dynamic> json = Map.from(event.snapshot.value as Map);
           ChatMessage msg = ChatMessage.fromJson(json);
-          StorageService().addMessageToConversation(msg);
+          StorageService().storeMessage(msg);
           return Transaction.success(null);
         });
       },

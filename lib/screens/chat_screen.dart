@@ -89,7 +89,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       conversationID: widget.conversation.conversationID,
                       messageContent: controller.text,
                       messageType: MessageType.sent,
-                      recieverUID: widget.conversation.reciepientUID,
+                      recieverUID: widget.conversation.recipientUID,
                       senderUID: uid,
                       timestamp: DateTime.now(),
                     );
@@ -135,8 +135,6 @@ class _ChatScreenState extends State<ChatScreen> {
                 width: 2,
               ),
               CircleAvatar(
-                backgroundImage: NetworkImage(
-                    "https://randomuser.me/api/portraits/men/5.jpg"),
                 maxRadius: 20,
               ),
               SizedBox(
@@ -148,7 +146,8 @@ class _ChatScreenState extends State<ChatScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     Text(
-                      "John Doe",
+                      widget.conversation.recipientUID,
+                      overflow: TextOverflow.ellipsis,
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                     ),
@@ -163,10 +162,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   ],
                 ),
               ),
-              Icon(
-                Icons.settings,
-                color: Colors.black54,
-              ),
+              // Icon(
+              //   Icons.settings,
+              //   color: Colors.black54,
+              // ),
             ],
           ),
         ),

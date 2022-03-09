@@ -5,7 +5,6 @@ import 'package:secure_messages/firebase_options.dart';
 import 'package:secure_messages/screens/home_screen.dart';
 import 'package:secure_messages/services/authentication_service.dart';
 import 'package:secure_messages/services/message_service.dart';
-import 'package:secure_messages/services/storage_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
