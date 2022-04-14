@@ -1,12 +1,14 @@
+import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:secure_messages/enums/message_content_type.dart';
 import 'package:secure_messages/enums/message_type.dart';
-import 'package:secure_messages/models/chat_mesage_model.dart';
+import 'package:secure_messages/models/local_mesage_model.dart';
 import 'package:secure_messages/models/conversation_model.dart';
 import 'package:secure_messages/services/chat_service.dart';
+import 'package:secure_messages/services/crypto_service.dart';
 
 import '../services/authentication_service.dart';
 
@@ -36,6 +38,8 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Column _appBody(BuildContext context) {
+    CryptoService crypto = CryptoService();
+    crypto.keyPair.extractPublicKey();
     TextEditingController controller = TextEditingController();
     final ChatService chatService =
         Provider.of<ChatService>(context, listen: true);
@@ -84,8 +88,7 @@ class _ChatScreenState extends State<ChatScreen> {
               FloatingActionButton(
                 onPressed: () async {
                   if (controller.text.isNotEmpty) {
-                    ChatMessage message = ChatMessage(
-                      contentType: MessageContentType.text,
+                    LocalMessage message = LocalMessage(
                       conversationID: widget.conversation.conversationID,
                       messageContent: controller.text,
                       messageType: MessageType.sent,
@@ -94,7 +97,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       timestamp: DateTime.now(),
                     );
                     controller.clear();
-                    chatService.sendMessage(message);
+                    chatService.sendMessageToConversation(message);
                   }
                 },
                 child: Icon(

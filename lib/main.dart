@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:secure_messages/firebase_options.dart';
 import 'package:secure_messages/screens/home_screen.dart';
 import 'package:secure_messages/services/authentication_service.dart';
+import 'package:secure_messages/services/crypto_service.dart';
 import 'package:secure_messages/services/message_service.dart';
 
 void main() async {
@@ -13,6 +14,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   GetIt.I.registerSingleton<AuthenticationService>(AuthenticationService());
+  CryptoService();
   runApp(MyApp());
 }
 

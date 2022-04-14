@@ -1,1 +1,4 @@
-enum MessageContentType { text }
+enum MessageContentType {
+  init,
+  message,
+}

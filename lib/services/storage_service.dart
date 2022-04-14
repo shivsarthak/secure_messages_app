@@ -1,6 +1,12 @@
+import 'dart:convert';
+
+import 'package:convert/convert.dart';
+import 'package:cryptography/cryptography.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:secure_messages/models/chat_mesage_model.dart';
+import 'package:secure_messages/models/local_mesage_model.dart';
 import 'package:secure_messages/models/conversation_model.dart';
+import 'package:secure_messages/models/network_message_model.dart';
+import 'package:secure_messages/services/crypto_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 class StorageService with ChangeNotifier {
@@ -20,7 +26,7 @@ class StorageService with ChangeNotifier {
   }
   Future<Database> _init() async {
     var db = await openDatabase(
-      'secure_messages_new.db',
+      'secure_messages_new_2.db',
       version: 2,
       onCreate: (db, version) async {
         await db.execute('''CREATE TABLE Conversations (
@@ -28,7 +34,9 @@ class StorageService with ChangeNotifier {
               conversationID TEXT type NOT NULL,
               recipientUID TEXT type NOT NULL,
               nickname TEXT,
-              last_message INTEGER 
+              last_message INTEGER,
+              pub_key TEXT,
+              secret_key TEXT
               )
             ''');
 
@@ -45,12 +53,13 @@ class StorageService with ChangeNotifier {
     return db;
   }
 
-  Future getConversations() async {
+  Future<List<Conversation>> getConversations() async {
     var result = await db.rawQuery(
       '''SELECT conversationID,
         recipientUID,
         nickname , 
-        last_message FROM Conversations 
+        last_message,
+        pub_key FROM Conversations 
         ORDER BY last_message DESC''',
     );
     conversations = result.map((e) => Conversation.fromJSON(e)).toList();
@@ -60,32 +69,35 @@ class StorageService with ChangeNotifier {
 
   Future createConversation(Conversation conversation) async {
     await db.insert('Conversations',
-        conversation.toJSON(DateTime.now().millisecondsSinceEpoch));
+        await conversation.toJSON(DateTime.now().millisecondsSinceEpoch));
     getConversations();
     notifyListeners();
   }
 
-  Future storeMessage(
-    ChatMessage message,
-  ) async {
+  Future storeMessage(LocalMessage message, String senderPubKey) async {
     var res = await db.rawQuery(
         "SELECT * from Conversations where conversationID = '${message.conversationID}'");
     if (res.isEmpty) {
+      var pubKey = SimplePublicKey(base64.decode(senderPubKey),
+          type: KeyPairType.x25519);
+      CryptoService crypto = CryptoService();
+      var secretKey = await crypto.sharedSecretKey(pubKey);
       Conversation conversation = Conversation(
+          secretKey: secretKey,
           conversationID: message.conversationID,
-          recipientUID: message.senderUID);
+          recipientUID: message.recieverUID,
+          publicKey: pubKey);
       createConversation(conversation);
     }
     await db.insert(
       "Chat_Messages",
       message.toLocalJSON(),
     );
-
     notifyListeners();
     return;
   }
 
-  Future<List<ChatMessage>> getConversationMessages(
+  Future<List<LocalMessage>> getConversationMessages(
     String conversationID, {
     int limit = 25,
     int offset = 0,
@@ -94,7 +106,7 @@ class StorageService with ChangeNotifier {
         where conversationID = '$conversationID'
         ORDER BY timestamp DESC 
         LIMIT $limit OFFSET $offset''');
-    return res.map((e) => ChatMessage.fromLocalJson(e)).toList();
+    return res.map((e) => LocalMessage.fromLocalJson(e)).toList();
   }
 
   deleteData() async {
@@ -105,6 +117,6 @@ class StorageService with ChangeNotifier {
 
   deleteConversation(Conversation conversation) async {
     await db.rawDelete(
-        "Delete * from Chat_Messages where conversationID = '${conversation.conversationID}'");
+        "Delete from Chat_Messages where conversationID = '${conversation.conversationID}'");
   }
 }

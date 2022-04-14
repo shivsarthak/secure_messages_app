@@ -6,6 +6,7 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:secure_messages/models/conversation_model.dart';
 import 'package:secure_messages/models/user_model.dart';
 import 'package:secure_messages/services/authentication_service.dart';
+import 'package:secure_messages/services/crypto_service.dart';
 import 'package:secure_messages/services/storage_service.dart';
 
 Future<void> confirmAddUserDialog(BuildContext context, UserModel user) async {
@@ -38,8 +39,10 @@ Future<void> confirmAddUserDialog(BuildContext context, UserModel user) async {
                 user.uid
               ];
               usersList.sort();
-
+              var key = await CryptoService().sharedSecretKey(user.publicKey);
               Conversation conversation = Conversation(
+                publicKey: user.publicKey,
+                secretKey: key,
                 conversationID: usersList.join(''),
                 recipientUID: user.uid,
               );

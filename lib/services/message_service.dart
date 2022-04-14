@@ -1,7 +1,12 @@
+import 'package:convert/convert.dart';
+import 'package:cryptography/cryptography.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:get_it/get_it.dart';
-import 'package:secure_messages/models/chat_mesage_model.dart';
+import 'package:secure_messages/models/conversation_model.dart';
+import 'package:secure_messages/models/local_mesage_model.dart';
+import 'package:secure_messages/models/network_message_model.dart';
 import 'package:secure_messages/services/authentication_service.dart';
+import 'package:secure_messages/services/crypto_service.dart';
 import 'package:secure_messages/services/storage_service.dart';
 
 class MessageService {
@@ -23,26 +28,26 @@ class MessageService {
       if (_messages != null) {
         _messages!.forEach((key, value) async {
           Map<String, dynamic> json = Map.from(value as Map);
-          ChatMessage msg = ChatMessage.fromJson(json);
+          LocalMessage msg = LocalMessage.fromJson(json);
 
-          await StorageService().storeMessage(msg);
+          //  await StorageService().storeMessage(msg);
         });
       }
     });
   }
 
-  Future<String?> sendMessage(ChatMessage message) async {
+  Future<String?> sendMessage(NetworkMessage message) async {
     String? messageID = database
         .ref()
         .child("users/${message.recieverUID}/new_messages")
         .push()
         .key;
-    message.messageID = messageID;
+
     await database
         .ref()
         .child("users/${message.recieverUID}/new_messages/$messageID")
         .set(message.toJSON());
-    await StorageService().storeMessage(message);
+
     return messageID;
   }
 
@@ -51,6 +56,7 @@ class MessageService {
     String uid = GetIt.I<AuthenticationService>().user!.uid;
     return database.ref('users/$uid/new_messages').onChildAdded.listen(
       (event) async {
+        CryptoService crypto = CryptoService();
         database
             .ref()
             .child("users/$uid/new_messages")
@@ -59,8 +65,11 @@ class MessageService {
             return Transaction.abort();
           }
           Map<String, dynamic> json = Map.from(event.snapshot.value as Map);
-          ChatMessage msg = ChatMessage.fromJson(json);
-          StorageService().storeMessage(msg);
+          NetworkMessage msg = NetworkMessage.fromJson(json);
+          crypto.decryptNetworkMessage(msg).then((val) {
+            StorageService().storeMessage(val, msg.senderPubKeyString);
+          });
+
           return Transaction.success(null);
         });
       },
