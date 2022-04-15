@@ -1,9 +1,8 @@
-import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:secretic/enums/message_content_type.dart';
+
 import 'package:secretic/enums/message_type.dart';
 import 'package:secretic/models/local_mesage_model.dart';
 import 'package:secretic/models/conversation_model.dart';
@@ -24,7 +23,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  String uid = GetIt.I<AuthenticationService>().user!.uid;
+  String uid = GetIt.I<AuthenticationService>().user.uid;
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -38,7 +37,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Column _appBody(BuildContext context) {
-    CryptoService crypto = CryptoService();
+    CryptoService crypto = GetIt.I.get<CryptoService>();
     crypto.keyPair.extractPublicKey();
     TextEditingController controller = TextEditingController();
     final ChatService chatService =

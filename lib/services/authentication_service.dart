@@ -1,24 +1,21 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:secretic/services/message_service.dart';
+import 'package:get_it/get_it.dart';
 
 class AuthenticationService {
-  bool isAuthenticated = false;
-  User? user;
+  late User user;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  AuthenticationService() {
-    checkAuth(_auth).then((value) {
-      user = value;
-      MessageService().getAllNewMessages(user!.uid);
-    });
-  }
-  Future<User> checkAuth(FirebaseAuth auth) async {
-    User? user = auth.currentUser;
-    if (user != null) {
-      isAuthenticated = true;
-      return user;
+
+  Future<AuthenticationService> init() async {
+    User? currUser = _auth.currentUser;
+    if (currUser != null) {
+      user = currUser;
+      return this;
     }
     UserCredential userCredential =
         await FirebaseAuth.instance.signInAnonymously();
-    return userCredential.user!;
+    user = userCredential.user!;
+    GetIt.instance.signalReady(this);
+
+    return this;
   }
 }

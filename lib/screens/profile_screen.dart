@@ -18,10 +18,10 @@ class _ProfileScreenState extends State<ProfileScreen>
   UserModel? user;
 
   Future<UserModel> _initUser() async {
-    CryptoService instance = CryptoService();
+    CryptoService instance = GetIt.I.get<CryptoService>();
     SimplePublicKey key = await instance.keyPair.extractPublicKey();
     UserModel user =
-        UserModel(GetIt.I<AuthenticationService>().user!.uid, '', key);
+        UserModel(GetIt.I<AuthenticationService>().user.uid, '', key);
     return user;
   }
 

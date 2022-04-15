@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:get_it/get_it.dart';
 
 import 'package:secretic/models/local_mesage_model.dart';
 import 'package:secretic/models/conversation_model.dart';
@@ -12,7 +13,7 @@ class ChatService extends ChangeNotifier {
   List<LocalMessage> messages = [];
   late String uid;
   MessageService messageService = MessageService();
-  StorageService storageService = StorageService();
+  StorageService storageService = GetIt.I.get<StorageService>();
 
   ChatService(this.conversation) {
     storageService
@@ -55,7 +56,7 @@ class ChatService extends ChangeNotifier {
   Future _sendMessage(LocalMessage message) async {
     var encryptedNetworkMessage =
         await NetworkMessage.fromLocalmessage(message, conversation.secretKey);
-    await StorageService().storeMessage(message, '');
+    await GetIt.I.get<StorageService>().storeMessage(message, '');
     messageService.sendMessage(encryptedNetworkMessage);
   }
 }

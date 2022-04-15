@@ -18,7 +18,7 @@ class ConversationsScreen extends StatefulWidget {
 class _ConversationsScreenState extends State<ConversationsScreen>
     with AutomaticKeepAliveClientMixin {
   List<Conversation> _conversations = [];
-  final StorageService _store = StorageService();
+  final StorageService _store = GetIt.I.get<StorageService>();
   @override
   void initState() {
     super.initState();
@@ -85,7 +85,7 @@ class ConversationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       onLongPress: () {
-        StorageService().deleteConversation(conversation);
+        GetIt.I.get<StorageService>().deleteConversation(conversation);
       },
       onTap: () {
         Navigator.push(context,

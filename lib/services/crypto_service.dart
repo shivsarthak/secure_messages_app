@@ -11,7 +11,6 @@ import 'package:secretic/options.dart';
 import 'package:secretic/services/authentication_service.dart';
 
 class CryptoService {
-  static final CryptoService _instance = CryptoService._internal();
   late SimpleKeyPair keyPair;
   late SimplePublicKey publicKey;
 
@@ -22,22 +21,17 @@ class CryptoService {
     macAlgorithm: Hmac.sha256(),
   );
 
-  factory CryptoService() {
-    return _instance;
-  }
-
-  _init() async {
+  Future<CryptoService> init() async {
     if (await storage.containsKey(key: localStorageKey)) {
-      _readKeys();
+      await _readKeys();
     } else {
-      _generateKeyPairs();
+      await _generateKeyPairs();
     }
+
+    return this;
   }
 
-  CryptoService._internal() {
-    _init();
-  }
-  _generateKeyPairs() async {
+  Future _generateKeyPairs() async {
     var newPair = await algorithm.newKeyPair();
 
     var seed = await newPair.extractPrivateKeyBytes();
@@ -46,14 +40,14 @@ class CryptoService {
     publicKey = await keyPair.extractPublicKey();
   }
 
-  _storeSeed(List<int> data) async {
+  Future _storeSeed(List<int> data) async {
     storage.write(
       key: localStorageKey,
       value: base64.encode(data),
     );
   }
 
-  _readKeys() async {
+  Future _readKeys() async {
     if (await storage.containsKey(key: localStorageKey)) {
       String seedString = (await storage.read(key: localStorageKey))!;
       List<int> seed = base64.decode(seedString);
@@ -96,7 +90,7 @@ class CryptoService {
 
   Future<LocalMessage> decryptNetworkMessage(
       NetworkMessage networkMessage) async {
-    String uid = GetIt.I<AuthenticationService>().user!.uid;
+    String uid = GetIt.I<AuthenticationService>().user.uid;
     var sharedkey = await sharedSecretKey(SimplePublicKey(
       base64.decode(networkMessage.senderPubKeyString),
       type: KeyPairType.x25519,
@@ -124,15 +118,13 @@ class CryptoService {
 
   Future<NetworkMessage> encryptLocalMessage(
       LocalMessage message, SecretKey secretKey) async {
-    CryptoService cryptoService = CryptoService();
-
-    var cipherText = await cryptoService.encryption.encrypt(
+    var cipherText = await encryption.encrypt(
       utf8.encode(message.messageContent),
       secretKey: secretKey,
     );
 
     return NetworkMessage(
-      senderPubKeyString: base64.encode(cryptoService.publicKey.bytes),
+      senderPubKeyString: base64.encode(publicKey.bytes),
       conversationID: message.conversationID,
       timestamp: message.timestamp,
       senderUID: message.senderUID,

@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:convert/convert.dart';
 import 'package:cryptography/cryptography.dart';
 
 class Conversation {
@@ -20,7 +19,7 @@ class Conversation {
 
   factory Conversation.fromJSON(Map<String, Object?> map) {
     final key = SecretKey(base64Decode(map['secret_key'].toString()));
-    print(map['secret_key'].toString());
+
     return Conversation(
       secretKey: key,
       conversationID: map['conversationID'].toString(),

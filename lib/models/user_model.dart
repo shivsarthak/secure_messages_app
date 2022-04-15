@@ -1,6 +1,4 @@
 import 'dart:convert';
-
-import 'package:convert/convert.dart';
 import 'package:cryptography/cryptography.dart';
 
 class UserModel {

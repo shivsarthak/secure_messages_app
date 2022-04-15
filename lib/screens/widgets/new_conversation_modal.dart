@@ -35,11 +35,13 @@ Future<void> confirmAddUserDialog(BuildContext context, UserModel user) async {
             child: const Text('Approve'),
             onPressed: () async {
               var usersList = [
-                GetIt.I<AuthenticationService>().user!.uid,
+                GetIt.I<AuthenticationService>().user.uid,
                 user.uid
               ];
               usersList.sort();
-              var key = await CryptoService().sharedSecretKey(user.publicKey);
+              var key = await GetIt.I
+                  .get<CryptoService>()
+                  .sharedSecretKey(user.publicKey);
               Conversation conversation = Conversation(
                 publicKey: user.publicKey,
                 secretKey: key,
@@ -47,7 +49,9 @@ Future<void> confirmAddUserDialog(BuildContext context, UserModel user) async {
                 recipientUID: user.uid,
               );
 
-              await StorageService().createConversation(conversation);
+              await GetIt.I
+                  .get<StorageService>()
+                  .createConversation(conversation);
               Navigator.of(context).pop();
             },
           ),

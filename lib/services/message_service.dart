@@ -1,9 +1,6 @@
-import 'package:convert/convert.dart';
-import 'package:cryptography/cryptography.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:get_it/get_it.dart';
-import 'package:secretic/models/conversation_model.dart';
-import 'package:secretic/models/local_mesage_model.dart';
+
 import 'package:secretic/models/network_message_model.dart';
 import 'package:secretic/services/authentication_service.dart';
 import 'package:secretic/services/crypto_service.dart';
@@ -29,9 +26,11 @@ class MessageService {
         _messages!.forEach((key, value) async {
           Map<String, dynamic> json = Map.from(value as Map);
           NetworkMessage msg = NetworkMessage.fromJson(json);
-          var localMessage = await CryptoService().decryptNetworkMessage(msg);
+          var localMessage =
+              await GetIt.I.get<CryptoService>().decryptNetworkMessage(msg);
 
-          await StorageService()
+          await GetIt.I
+              .get<StorageService>()
               .storeMessage(localMessage, msg.senderPubKeyString);
         });
       }
@@ -54,11 +53,10 @@ class MessageService {
   }
 
   messageStream() async {
-    //TODO:Wait for uid to load
-    String uid = GetIt.I<AuthenticationService>().user!.uid;
+    String uid = GetIt.I<AuthenticationService>().user.uid;
     return database.ref('users/$uid/new_messages').onChildAdded.listen(
       (event) async {
-        CryptoService crypto = CryptoService();
+        CryptoService crypto = GetIt.I.get<CryptoService>();
         database
             .ref()
             .child("users/$uid/new_messages")
@@ -69,7 +67,9 @@ class MessageService {
           Map<String, dynamic> json = Map.from(event.snapshot.value as Map);
           NetworkMessage msg = NetworkMessage.fromJson(json);
           crypto.decryptNetworkMessage(msg).then((val) {
-            StorageService().storeMessage(val, msg.senderPubKeyString);
+            GetIt.I
+                .get<StorageService>()
+                .storeMessage(val, msg.senderPubKeyString);
           });
 
           return Transaction.success(null);

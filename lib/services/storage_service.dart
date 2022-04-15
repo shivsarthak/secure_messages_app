@@ -1,31 +1,20 @@
 import 'dart:convert';
 
-import 'package:convert/convert.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:get_it/get_it.dart';
 import 'package:secretic/models/local_mesage_model.dart';
 import 'package:secretic/models/conversation_model.dart';
-import 'package:secretic/models/network_message_model.dart';
+
 import 'package:secretic/services/crypto_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 class StorageService with ChangeNotifier {
-  static final StorageService _instance = StorageService._internal();
   late Database db;
   List<Conversation> conversations = [];
-  factory StorageService() {
-    return _instance;
-  }
 
-  StorageService._internal() {
-    _init().then((value) async {
-      db = value;
-      await getConversations();
-      notifyListeners();
-    });
-  }
-  Future<Database> _init() async {
-    var db = await openDatabase(
+  Future<StorageService> init() async {
+    var database = await openDatabase(
       'secure_messages_new_2.db',
       version: 2,
       onCreate: (db, version) async {
@@ -49,8 +38,9 @@ class StorageService with ChangeNotifier {
             ''');
       },
     );
+    db = database;
 
-    return db;
+    return this;
   }
 
   Future<List<Conversation>> getConversations() async {
@@ -81,7 +71,7 @@ class StorageService with ChangeNotifier {
     if (res.isEmpty) {
       var pubKey = SimplePublicKey(base64.decode(senderPubKey),
           type: KeyPairType.x25519);
-      CryptoService crypto = CryptoService();
+      CryptoService crypto = GetIt.I.get<CryptoService>();
       var secretKey = await crypto.sharedSecretKey(pubKey);
 
       Conversation conversation = Conversation(

@@ -1,13 +1,8 @@
-import 'dart:convert';
-
-import 'package:convert/convert.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:get_it/get_it.dart';
 
-import 'package:secretic/enums/message_type.dart';
 import 'package:secretic/models/local_mesage_model.dart';
 
-import 'package:secretic/services/authentication_service.dart';
 import 'package:secretic/services/crypto_service.dart';
 
 class NetworkMessage {
@@ -52,7 +47,7 @@ class NetworkMessage {
 
   static Future<NetworkMessage> fromLocalmessage(
       LocalMessage message, SecretKey secretKey) async {
-    CryptoService cryptoService = CryptoService();
+    CryptoService cryptoService = GetIt.I.get<CryptoService>();
 
     return await cryptoService.encryptLocalMessage(message, secretKey);
   }
