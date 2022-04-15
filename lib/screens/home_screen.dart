@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:secure_messages/screens/conversations_screen.dart';
-import 'package:secure_messages/screens/profile_screen.dart';
+import 'package:secretic/screens/conversations_screen.dart';
+import 'package:secretic/screens/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);

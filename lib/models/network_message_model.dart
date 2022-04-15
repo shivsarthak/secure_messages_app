@@ -4,11 +4,11 @@ import 'package:convert/convert.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:get_it/get_it.dart';
 
-import 'package:secure_messages/enums/message_type.dart';
-import 'package:secure_messages/models/local_mesage_model.dart';
+import 'package:secretic/enums/message_type.dart';
+import 'package:secretic/models/local_mesage_model.dart';
 
-import 'package:secure_messages/services/authentication_service.dart';
-import 'package:secure_messages/services/crypto_service.dart';
+import 'package:secretic/services/authentication_service.dart';
+import 'package:secretic/services/crypto_service.dart';
 
 class NetworkMessage {
   final String senderPubKeyString;
@@ -50,22 +50,10 @@ class NetworkMessage {
     return messageData;
   }
 
-  static Future<NetworkMessage> fromChatmessage(
+  static Future<NetworkMessage> fromLocalmessage(
       LocalMessage message, SecretKey secretKey) async {
     CryptoService cryptoService = CryptoService();
 
-    var cipherText = await cryptoService.encryption.encrypt(
-      utf8.encode(message.messageContent),
-      secretKey: secretKey,
-    );
-
-    return NetworkMessage(
-      senderPubKeyString: base64.encode(cryptoService.publicKey.bytes),
-      conversationID: message.conversationID,
-      timestamp: message.timestamp,
-      senderUID: message.senderUID,
-      recieverUID: message.recieverUID,
-      encryptedMessage: base64.encode(cipherText.concatenation()),
-    );
+    return await cryptoService.encryptLocalMessage(message, secretKey);
   }
 }

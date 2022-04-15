@@ -3,12 +3,12 @@ import 'dart:convert';
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
-import 'package:secure_messages/enums/message_type.dart';
-import 'package:secure_messages/models/local_mesage_model.dart';
-import 'package:secure_messages/models/network_message_model.dart';
-import 'package:secure_messages/options.dart';
-import 'package:convert/convert.dart';
-import 'package:secure_messages/services/authentication_service.dart';
+import 'package:secretic/enums/message_type.dart';
+import 'package:secretic/models/local_mesage_model.dart';
+import 'package:secretic/models/network_message_model.dart';
+import 'package:secretic/options.dart';
+
+import 'package:secretic/services/authentication_service.dart';
 
 class CryptoService {
   static final CryptoService _instance = CryptoService._internal();
@@ -17,7 +17,7 @@ class CryptoService {
 
   final algorithm = X25519();
   final storage = FlutterSecureStorage();
-
+  final kdf = Hkdf(hmac: Hmac.sha256(), outputLength: 32);
   final encryption = AesCtr.with256bits(
     macAlgorithm: Hmac.sha256(),
   );
@@ -70,8 +70,27 @@ class CryptoService {
       keyPair: keyPair,
       remotePublicKey: pubKey,
     );
-    SecretKey encryptionKey =
-        await encryption.newSecretKeyFromBytes(await key.extractBytes());
+
+    final nonce = [
+      55,
+      77,
+      33,
+      102,
+      114,
+      2,
+      52,
+      98,
+      12,
+      8,
+      41,
+      93,
+      62,
+      16,
+      72,
+      31
+    ];
+    SecretKey encryptionKey = await kdf.deriveKey(secretKey: key, nonce: nonce);
+
     return encryptionKey;
   }
 
@@ -85,7 +104,7 @@ class CryptoService {
     SecretBox secretBox = SecretBox.fromConcatenation(
         base64Decode(networkMessage.encryptedMessage),
         nonceLength: 16,
-        macLength: 16);
+        macLength: 32);
 
     var bytesList = await encryption.decrypt(secretBox, secretKey: sharedkey);
 

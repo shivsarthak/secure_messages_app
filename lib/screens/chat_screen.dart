@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:secure_messages/enums/message_content_type.dart';
-import 'package:secure_messages/enums/message_type.dart';
-import 'package:secure_messages/models/local_mesage_model.dart';
-import 'package:secure_messages/models/conversation_model.dart';
-import 'package:secure_messages/services/chat_service.dart';
-import 'package:secure_messages/services/crypto_service.dart';
+import 'package:secretic/enums/message_content_type.dart';
+import 'package:secretic/enums/message_type.dart';
+import 'package:secretic/models/local_mesage_model.dart';
+import 'package:secretic/models/conversation_model.dart';
+import 'package:secretic/services/chat_service.dart';
+import 'package:secretic/services/crypto_service.dart';
 
 import '../services/authentication_service.dart';
 

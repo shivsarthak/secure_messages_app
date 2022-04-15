@@ -2,12 +2,12 @@ import 'package:convert/convert.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:get_it/get_it.dart';
-import 'package:secure_messages/models/conversation_model.dart';
-import 'package:secure_messages/models/local_mesage_model.dart';
-import 'package:secure_messages/models/network_message_model.dart';
-import 'package:secure_messages/services/authentication_service.dart';
-import 'package:secure_messages/services/crypto_service.dart';
-import 'package:secure_messages/services/storage_service.dart';
+import 'package:secretic/models/conversation_model.dart';
+import 'package:secretic/models/local_mesage_model.dart';
+import 'package:secretic/models/network_message_model.dart';
+import 'package:secretic/services/authentication_service.dart';
+import 'package:secretic/services/crypto_service.dart';
+import 'package:secretic/services/storage_service.dart';
 
 class MessageService {
   final FirebaseDatabase database = FirebaseDatabase.instance;
@@ -28,9 +28,11 @@ class MessageService {
       if (_messages != null) {
         _messages!.forEach((key, value) async {
           Map<String, dynamic> json = Map.from(value as Map);
-          LocalMessage msg = LocalMessage.fromJson(json);
+          NetworkMessage msg = NetworkMessage.fromJson(json);
+          var localMessage = await CryptoService().decryptNetworkMessage(msg);
 
-          //  await StorageService().storeMessage(msg);
+          await StorageService()
+              .storeMessage(localMessage, msg.senderPubKeyString);
         });
       }
     });

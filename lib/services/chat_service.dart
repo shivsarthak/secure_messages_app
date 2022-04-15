@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 
-import 'package:secure_messages/models/local_mesage_model.dart';
-import 'package:secure_messages/models/conversation_model.dart';
-import 'package:secure_messages/models/network_message_model.dart';
-import 'package:secure_messages/services/message_service.dart';
-import 'package:secure_messages/services/storage_service.dart';
+import 'package:secretic/models/local_mesage_model.dart';
+import 'package:secretic/models/conversation_model.dart';
+import 'package:secretic/models/network_message_model.dart';
+import 'package:secretic/services/message_service.dart';
+import 'package:secretic/services/storage_service.dart';
 
 class ChatService extends ChangeNotifier {
   bool _disposed = false;
@@ -54,7 +54,7 @@ class ChatService extends ChangeNotifier {
 
   Future _sendMessage(LocalMessage message) async {
     var encryptedNetworkMessage =
-        await NetworkMessage.fromChatmessage(message, conversation.secretKey);
+        await NetworkMessage.fromLocalmessage(message, conversation.secretKey);
     await StorageService().storeMessage(message, '');
     messageService.sendMessage(encryptedNetworkMessage);
   }

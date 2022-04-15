@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:secure_messages/services/message_service.dart';
+import 'package:secretic/services/message_service.dart';
 
 class AuthenticationService {
   bool isAuthenticated = false;

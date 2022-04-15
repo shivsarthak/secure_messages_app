@@ -19,8 +19,10 @@ class Conversation {
   });
 
   factory Conversation.fromJSON(Map<String, Object?> map) {
+    final key = SecretKey(base64Decode(map['secret_key'].toString()));
+    print(map['secret_key'].toString());
     return Conversation(
-      secretKey: SecretKey(base64Decode(map['secret_key'].toString())),
+      secretKey: key,
       conversationID: map['conversationID'].toString(),
       nickname: map['nickname'].toString(),
       publicKey: SimplePublicKey(base64Decode(map['pubKey'].toString()),

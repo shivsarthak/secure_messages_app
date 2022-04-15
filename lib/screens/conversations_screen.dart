@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 
-import 'package:secure_messages/models/conversation_model.dart';
-import 'package:secure_messages/models/user_model.dart';
-import 'package:secure_messages/screens/chat_screen.dart';
-import 'package:secure_messages/screens/widgets/new_conversation_modal.dart';
-import 'package:secure_messages/services/storage_service.dart';
+import 'package:secretic/models/conversation_model.dart';
+import 'package:secretic/models/user_model.dart';
+import 'package:secretic/screens/chat_screen.dart';
+import 'package:secretic/screens/widgets/new_conversation_modal.dart';
+import 'package:secretic/services/storage_service.dart';
 
 class ConversationsScreen extends StatefulWidget {
   const ConversationsScreen({Key? key}) : super(key: key);

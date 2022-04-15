@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'package:convert/convert.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:secure_messages/models/local_mesage_model.dart';
-import 'package:secure_messages/models/conversation_model.dart';
-import 'package:secure_messages/models/network_message_model.dart';
-import 'package:secure_messages/services/crypto_service.dart';
+import 'package:secretic/models/local_mesage_model.dart';
+import 'package:secretic/models/conversation_model.dart';
+import 'package:secretic/models/network_message_model.dart';
+import 'package:secretic/services/crypto_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 class StorageService with ChangeNotifier {
@@ -59,6 +59,7 @@ class StorageService with ChangeNotifier {
         recipientUID,
         nickname , 
         last_message,
+        secret_key,
         pub_key FROM Conversations 
         ORDER BY last_message DESC''',
     );
@@ -82,10 +83,11 @@ class StorageService with ChangeNotifier {
           type: KeyPairType.x25519);
       CryptoService crypto = CryptoService();
       var secretKey = await crypto.sharedSecretKey(pubKey);
+
       Conversation conversation = Conversation(
           secretKey: secretKey,
           conversationID: message.conversationID,
-          recipientUID: message.recieverUID,
+          recipientUID: message.senderUID,
           publicKey: pubKey);
       createConversation(conversation);
     }

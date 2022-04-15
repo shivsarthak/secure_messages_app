@@ -1,10 +1,10 @@
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:secure_messages/models/user_model.dart';
-import 'package:secure_messages/screens/widgets/qr_display.dart';
-import 'package:secure_messages/services/authentication_service.dart';
-import 'package:secure_messages/services/crypto_service.dart';
+import 'package:secretic/models/user_model.dart';
+import 'package:secretic/screens/widgets/qr_display.dart';
+import 'package:secretic/services/authentication_service.dart';
+import 'package:secretic/services/crypto_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);

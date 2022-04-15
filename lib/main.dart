@@ -1,11 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:secure_messages/firebase_options.dart';
-import 'package:secure_messages/screens/home_screen.dart';
-import 'package:secure_messages/services/authentication_service.dart';
-import 'package:secure_messages/services/crypto_service.dart';
-import 'package:secure_messages/services/message_service.dart';
+import 'package:secretic/firebase_options.dart';
+import 'package:secretic/screens/home_screen.dart';
+import 'package:secretic/services/authentication_service.dart';
+import 'package:secretic/services/crypto_service.dart';
+import 'package:secretic/services/message_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

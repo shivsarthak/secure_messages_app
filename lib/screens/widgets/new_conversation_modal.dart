@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:secure_messages/models/conversation_model.dart';
-import 'package:secure_messages/models/user_model.dart';
-import 'package:secure_messages/services/authentication_service.dart';
-import 'package:secure_messages/services/crypto_service.dart';
-import 'package:secure_messages/services/storage_service.dart';
+import 'package:secretic/models/conversation_model.dart';
+import 'package:secretic/models/user_model.dart';
+import 'package:secretic/services/authentication_service.dart';
+import 'package:secretic/services/crypto_service.dart';
+import 'package:secretic/services/storage_service.dart';
 
 Future<void> confirmAddUserDialog(BuildContext context, UserModel user) async {
   return showDialog<void>(

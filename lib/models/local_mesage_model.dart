@@ -1,9 +1,10 @@
 import 'dart:convert';
 
 import 'package:get_it/get_it.dart';
-import 'package:secure_messages/enums/message_content_type.dart';
-import 'package:secure_messages/enums/message_type.dart';
-import 'package:secure_messages/services/authentication_service.dart';
+
+import 'package:secretic/enums/message_content_type.dart';
+import 'package:secretic/enums/message_type.dart';
+import 'package:secretic/services/authentication_service.dart';
 
 class LocalMessage {
   final String messageContent;
