@@ -7,6 +7,7 @@ import 'package:secretic/models/user_model.dart';
 import 'package:secretic/screens/chat_screen.dart';
 import 'package:secretic/screens/widgets/new_conversation_modal.dart';
 import 'package:secretic/services/storage_service.dart';
+import 'package:secretic/styles.dart';
 
 class ConversationsScreen extends StatefulWidget {
   const ConversationsScreen({Key? key}) : super(key: key);
@@ -34,6 +35,7 @@ class _ConversationsScreenState extends State<ConversationsScreen>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
+      backgroundColor: white,
       appBar: AppBar(
         title: Text("Conversations"),
         actions: [
@@ -44,6 +46,7 @@ class _ConversationsScreenState extends State<ConversationsScreen>
             },
           )
         ],
+        elevation: 0,
       ),
       body: Consumer(
         builder: (BuildContext context, value, Widget? child) {
@@ -54,7 +57,7 @@ class _ConversationsScreenState extends State<ConversationsScreen>
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(
-          Icons.person_add,
+          Icons.qr_code_scanner_outlined,
           color: Colors.white,
         ),
         onPressed: () async {

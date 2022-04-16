@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:secretic/styles.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -11,11 +12,18 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
+      body: Stack(
         children: [
-          CircularProgressIndicator(),
+          Container(
+            decoration: BoxDecoration(gradient: primaryGradient),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+            ],
+          ),
         ],
       ),
     );

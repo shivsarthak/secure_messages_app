@@ -8,6 +8,7 @@ import 'package:secretic/services/authentication_service.dart';
 import 'package:secretic/services/crypto_service.dart';
 import 'package:secretic/services/message_service.dart';
 import 'package:secretic/services/storage_service.dart';
+import 'package:secretic/styles.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +31,23 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+          colorScheme: ColorScheme(
+              background: white,
+              brightness: Brightness.dark,
+              error: accentColor,
+              onBackground: white,
+              onError: white,
+              onPrimary: white,
+              onSecondary: white,
+              onSurface: white,
+              primary: primaryColor,
+              secondary: accentColor,
+              surface: accentGrey),
+          appBarTheme: AppBarTheme(
+            elevation: 0,
+            centerTitle: true,
+          )),
       debugShowCheckedModeBanner: false,
       title: 'Secretic',
       home: FutureBuilder(

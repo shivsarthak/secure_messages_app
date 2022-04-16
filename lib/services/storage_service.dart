@@ -23,7 +23,8 @@ class StorageService with ChangeNotifier {
               conversationID TEXT type NOT NULL,
               recipientUID TEXT type NOT NULL,
               nickname TEXT,
-              last_message INTEGER,
+              last_message TEXT,
+              display_content TEXT,
               pub_key TEXT,
               secret_key TEXT
               )

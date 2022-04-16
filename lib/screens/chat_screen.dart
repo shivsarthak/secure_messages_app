@@ -8,6 +8,7 @@ import 'package:secretic/models/local_mesage_model.dart';
 import 'package:secretic/models/conversation_model.dart';
 import 'package:secretic/services/chat_service.dart';
 import 'package:secretic/services/crypto_service.dart';
+import 'package:secretic/styles.dart';
 
 import '../services/authentication_service.dart';
 
@@ -29,86 +30,87 @@ class _ChatScreenState extends State<ChatScreen> {
     return ChangeNotifierProvider(
       create: (BuildContext context) => ChatService(widget.conversation),
       builder: (context, _) => Scaffold(
-        backgroundColor: Color(0xfff5f5f5),
+        backgroundColor: grey,
         appBar: _appBar(context),
         body: _appBody(context),
       ),
     );
   }
 
-  Column _appBody(BuildContext context) {
-    CryptoService crypto = GetIt.I.get<CryptoService>();
-    crypto.keyPair.extractPublicKey();
+  Widget _appBody(BuildContext context) {
     TextEditingController controller = TextEditingController();
     final ChatService chatService =
         Provider.of<ChatService>(context, listen: true);
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: <Widget>[
-        _ConversationSpace(),
+    return Stack(
+      children: [
         Container(
-          padding: EdgeInsets.only(left: 10, bottom: 10, top: 10),
-          height: 60,
-          width: double.infinity,
-          color: Colors.white,
-          child: Row(
-            children: <Widget>[
-              // GestureDetector(
-              //   onTap: () {},
-              //   child: Container(
-              //     height: 30,
-              //     width: 30,
-              //     decoration: BoxDecoration(
-              //       color: Colors.lightBlue,
-              //       borderRadius: BorderRadius.circular(30),
-              //     ),
-              //     child: Icon(
-              //       Icons.add,
-              //       color: Colors.white,
-              //       size: 20,
-              //     ),
-              //   ),
-              // ),
-              SizedBox(
-                width: 15,
-              ),
-              Expanded(
-                child: TextField(
-                  controller: controller,
-                  decoration: InputDecoration(
-                      hintText: "Write message...",
-                      hintStyle: TextStyle(color: Colors.black54),
-                      border: InputBorder.none),
+          decoration: BoxDecoration(gradient: primaryGradient),
+        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: <Widget>[
+            _ConversationSpace(),
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                        color: grey,
+                        border: Border.all(
+                          width: 1,
+                          color: primaryColor,
+                        ),
+                        borderRadius: BorderRadius.circular(24)),
+                    width: double.infinity,
+                    child: Row(
+                      children: <Widget>[
+                        SizedBox(
+                          width: 15,
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: controller,
+                            decoration: InputDecoration(
+                                hintText: "Message...",
+                                hintStyle: TextStyle(color: white),
+                                border: InputBorder.none),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 15,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              SizedBox(
-                width: 15,
-              ),
-              FloatingActionButton(
-                onPressed: () async {
-                  if (controller.text.isNotEmpty) {
-                    LocalMessage message = LocalMessage(
-                      conversationID: widget.conversation.conversationID,
-                      messageContent: controller.text,
-                      messageType: MessageType.sent,
-                      recieverUID: widget.conversation.recipientUID,
-                      senderUID: uid,
-                      timestamp: DateTime.now(),
-                    );
-                    controller.clear();
-                    chatService.sendMessageToConversation(message);
-                  }
-                },
-                child: Icon(
-                  Icons.send,
-                  color: Colors.white,
-                  size: 18,
+                FloatingActionButton(
+                  mini: true,
+                  onPressed: () async {
+                    if (controller.text.isNotEmpty) {
+                      LocalMessage message = LocalMessage(
+                        conversationID: widget.conversation.conversationID,
+                        messageContent: controller.text,
+                        messageType: MessageType.sent,
+                        recieverUID: widget.conversation.recipientUID,
+                        senderUID: uid,
+                        timestamp: DateTime.now(),
+                      );
+                      controller.clear();
+                      chatService.sendMessageToConversation(message);
+                    }
+                  },
+                  child: Icon(
+                    Icons.send,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                  backgroundColor: accentColor,
+                  elevation: 0,
                 ),
-                backgroundColor: Colors.blue,
-                elevation: 0,
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ],
     );
@@ -118,7 +120,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return AppBar(
       elevation: 0,
       automaticallyImplyLeading: false,
-      backgroundColor: Colors.white,
+      backgroundColor: lighterGrey,
       flexibleSpace: SafeArea(
         child: Container(
           padding: EdgeInsets.only(right: 16),
@@ -130,13 +132,14 @@ class _ChatScreenState extends State<ChatScreen> {
                 },
                 icon: Icon(
                   Icons.arrow_back,
-                  color: Colors.black,
+                  color: white,
                 ),
               ),
               SizedBox(
                 width: 2,
               ),
               CircleAvatar(
+                backgroundColor: white,
                 maxRadius: 20,
               ),
               SizedBox(
@@ -148,18 +151,19 @@ class _ChatScreenState extends State<ChatScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     Text(
-                      widget.conversation.recipientUID,
+                      "John Doe",
                       overflow: TextOverflow.ellipsis,
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: white),
                     ),
                     SizedBox(
                       height: 6,
                     ),
                     Text(
                       "Online",
-                      style:
-                          TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                      style: TextStyle(color: accentGrey, fontSize: 13),
                     ),
                   ],
                 ),
@@ -172,6 +176,18 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ),
       ),
+      actions: [
+        PopupMenuButton<String>(
+          itemBuilder: (BuildContext context) {
+            return {'Clear Conversation', 'Settings'}.map((String choice) {
+              return PopupMenuItem<String>(
+                value: choice,
+                child: Text(choice),
+              );
+            }).toList();
+          },
+        ),
+      ],
     );
   }
 }
@@ -200,7 +216,7 @@ class _ConversationSpaceState extends State<_ConversationSpace> {
                 return Padding(
                   padding: EdgeInsets.symmetric(horizontal: 8),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       ConstrainedBox(
                         constraints: BoxConstraints(
@@ -210,7 +226,7 @@ class _ConversationSpaceState extends State<_ConversationSpace> {
                           margin: EdgeInsets.symmetric(vertical: 12),
                           padding: EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.blue,
+                            color: lighterGrey,
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(12),
                               topRight: Radius.circular(12),
@@ -223,9 +239,10 @@ class _ConversationSpaceState extends State<_ConversationSpace> {
                           ),
                         ),
                       ),
+                      SizedBox(width: 24),
                       Text(
                         f.format(service.messages[index].timestamp),
-                        style: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                        style: TextStyle(fontSize: 10, color: white),
                       ),
                     ],
                   ),
@@ -234,12 +251,13 @@ class _ConversationSpaceState extends State<_ConversationSpace> {
                 return Padding(
                   padding: EdgeInsets.symmetric(horizontal: 8),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
                         f.format(service.messages[index].timestamp),
-                        style: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                        style: TextStyle(fontSize: 10, color: white),
                       ),
+                      SizedBox(width: 24),
                       ConstrainedBox(
                         constraints: BoxConstraints(
                             maxWidth:
@@ -248,7 +266,7 @@ class _ConversationSpaceState extends State<_ConversationSpace> {
                           margin: EdgeInsets.symmetric(vertical: 12),
                           padding: EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            gradient: secondaryGradient,
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(12),
                               topRight: Radius.circular(12),
@@ -257,7 +275,7 @@ class _ConversationSpaceState extends State<_ConversationSpace> {
                           ),
                           child: Text(
                             service.messages[index].messageContent,
-                            style: TextStyle(color: Colors.grey),
+                            style: TextStyle(color: white),
                           ),
                         ),
                       ),
