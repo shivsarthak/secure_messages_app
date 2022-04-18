@@ -6,6 +6,7 @@ import 'package:secretic/models/conversation_model.dart';
 import 'package:secretic/models/user_model.dart';
 import 'package:secretic/screens/chat_screen.dart';
 import 'package:secretic/screens/profile_screen.dart';
+import 'package:secretic/screens/widgets/drawer.dart';
 
 import 'package:secretic/screens/widgets/new_conversation_modal.dart';
 import 'package:secretic/services/storage_service.dart';
@@ -44,41 +45,8 @@ class _HomeScreenState extends State<HomeScreen>
         backgroundColor: grey,
         appBar: _appBar(_scaffoldKey),
         body: _body(),
-        drawer: _drawer(context),
+        drawer: CustomDrawer(),
         floatingActionButton: _fab(context),
-      ),
-    );
-  }
-
-  Drawer _drawer(BuildContext context) {
-    return Drawer(
-      child: Column(
-        children: [
-          UserAccountsDrawerHeader(
-            accountEmail: Text("test@test.com"),
-            accountName: Text("Test"),
-          ),
-          ListTile(
-            leading: Icon(Icons.qr_code),
-            title: Text("Show User Code"),
-            onTap: () {
-              Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => ProfileScreen()));
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.delete),
-            title: Text("Clear Conversations"),
-            onTap: () async {
-              await _store.deleteData();
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.settings),
-            title: Text("Settings"),
-            onTap: () async {},
-          ),
-        ],
       ),
     );
   }
