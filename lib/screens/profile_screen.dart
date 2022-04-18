@@ -5,6 +5,7 @@ import 'package:secretic/models/user_model.dart';
 import 'package:secretic/screens/widgets/qr_display.dart';
 import 'package:secretic/services/authentication_service.dart';
 import 'package:secretic/services/crypto_service.dart';
+import 'package:secretic/styles.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -39,6 +40,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
+      backgroundColor: white,
       appBar: AppBar(
         title: Text("Profile"),
         centerTitle: true,

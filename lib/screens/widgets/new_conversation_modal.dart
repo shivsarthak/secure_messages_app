@@ -47,6 +47,8 @@ Future<void> confirmAddUserDialog(BuildContext context, UserModel user) async {
                 secretKey: key,
                 conversationID: usersList.join(''),
                 recipientUID: user.uid,
+                displayContent: '',
+                lastMessage: DateTime.now(),
               );
 
               await GetIt.I

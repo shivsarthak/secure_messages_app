@@ -15,8 +15,8 @@ class StorageService with ChangeNotifier {
 
   Future<StorageService> init() async {
     var database = await openDatabase(
-      'secure_messages_new_2.db',
-      version: 2,
+      'secure_messages_a.db',
+      version: 3,
       onCreate: (db, version) async {
         await db.execute('''CREATE TABLE Conversations (
               id INTEGER PRIMARY KEY, 
@@ -50,6 +50,7 @@ class StorageService with ChangeNotifier {
         recipientUID,
         nickname , 
         last_message,
+        display_content,
         secret_key,
         pub_key FROM Conversations 
         ORDER BY last_message DESC''',
@@ -60,8 +61,7 @@ class StorageService with ChangeNotifier {
   }
 
   Future createConversation(Conversation conversation) async {
-    await db.insert('Conversations',
-        await conversation.toJSON(DateTime.now().millisecondsSinceEpoch));
+    await db.insert('Conversations', await conversation.toJSON(DateTime.now()));
     getConversations();
     notifyListeners();
   }
@@ -79,14 +79,26 @@ class StorageService with ChangeNotifier {
           secretKey: secretKey,
           conversationID: message.conversationID,
           recipientUID: message.senderUID,
-          publicKey: pubKey);
+          publicKey: pubKey,
+          displayContent: message.messageContent,
+          lastMessage: message.timestamp);
       createConversation(conversation);
     }
-    await db.insert(
-      "Chat_Messages",
-      message.toLocalJSON(),
-    );
-    notifyListeners();
+    await db.transaction((txn) async {
+      await txn.insert(
+        "Chat_Messages",
+        message.toLocalJSON(),
+      );
+      await txn.update(
+          'Conversations',
+          {
+            'display_content': message.messageContent,
+            'last_message': message.timestamp.toIso8601String()
+          },
+          where: 'conversationID = "${message.conversationID}"');
+    });
+
+    getConversations();
     return;
   }
 

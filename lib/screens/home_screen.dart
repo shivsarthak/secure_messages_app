@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:intl/intl.dart';
 
 import 'package:secretic/models/conversation_model.dart';
 import 'package:secretic/models/user_model.dart';
 import 'package:secretic/screens/chat_screen.dart';
+import 'package:secretic/screens/profile_screen.dart';
 
 import 'package:secretic/screens/widgets/new_conversation_modal.dart';
 import 'package:secretic/services/storage_service.dart';
@@ -42,19 +44,27 @@ class _HomeScreenState extends State<HomeScreen>
         backgroundColor: grey,
         appBar: _appBar(_scaffoldKey),
         body: _body(),
-        drawer: _drawer(),
+        drawer: _drawer(context),
         floatingActionButton: _fab(context),
       ),
     );
   }
 
-  Drawer _drawer() {
+  Drawer _drawer(BuildContext context) {
     return Drawer(
       child: Column(
         children: [
           UserAccountsDrawerHeader(
             accountEmail: Text("test@test.com"),
             accountName: Text("Test"),
+          ),
+          ListTile(
+            leading: Icon(Icons.qr_code),
+            title: Text("Show User Code"),
+            onTap: () {
+              Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => ProfileScreen()));
+            },
           ),
           ListTile(
             leading: Icon(Icons.delete),
@@ -152,6 +162,7 @@ class ConversationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final f = DateFormat('hh:mm a');
     return ListTile(
       onLongPress: () {
         GetIt.I.get<StorageService>().deleteConversation(conversation);
@@ -170,12 +181,12 @@ class ConversationTile extends StatelessWidget {
             TextStyle(color: white, fontWeight: FontWeight.w700, fontSize: 14),
       ),
       subtitle: Text(
-        "hey Buddy how have you been ?",
+        conversation.displayContent,
         style:
             TextStyle(color: white, fontWeight: FontWeight.w400, fontSize: 12),
       ),
       trailing: Text(
-        '5:45 pm',
+        f.format(conversation.lastMessage),
         style:
             TextStyle(color: white, fontWeight: FontWeight.w400, fontSize: 10),
       ),

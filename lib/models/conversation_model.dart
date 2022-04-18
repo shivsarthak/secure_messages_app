@@ -7,9 +7,13 @@ class Conversation {
   final String recipientUID;
   final String? nickname;
   final SimplePublicKey publicKey;
+  final DateTime lastMessage;
+  final String displayContent;
   final SecretKey secretKey;
 
   Conversation({
+    required this.lastMessage,
+    required this.displayContent,
     required this.secretKey,
     required this.conversationID,
     required this.recipientUID,
@@ -21,6 +25,8 @@ class Conversation {
     final key = SecretKey(base64Decode(map['secret_key'].toString()));
 
     return Conversation(
+      displayContent: map['display_content'].toString(),
+      lastMessage: DateTime.parse(map['last_message'].toString()),
       secretKey: key,
       conversationID: map['conversationID'].toString(),
       nickname: map['nickname'].toString(),
@@ -30,12 +36,12 @@ class Conversation {
     );
   }
 
-  Future<Map<String, Object?>> toJSON(int lastMessage) async {
+  Future<Map<String, Object?>> toJSON(DateTime lastMessage) async {
     Map<String, Object?> json = {
       'conversationID': conversationID,
       'nickname': nickname,
       'recipientUID': recipientUID,
-      'last_message': lastMessage,
+      'last_message': lastMessage.toIso8601String(),
       'pub_key': base64.encode(publicKey.bytes),
       'secret_key': base64.encode(await secretKey.extractBytes())
     };
