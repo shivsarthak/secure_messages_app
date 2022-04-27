@@ -43,7 +43,6 @@ Future<void> confirmAddUserDialog(BuildContext context, UserModel user) async {
                   .get<CryptoService>()
                   .sharedSecretKey(user.publicKey);
               Conversation conversation = Conversation(
-                publicKey: user.publicKey,
                 secretKey: key,
                 conversationID: usersList.join(''),
                 recipientUID: user.uid,

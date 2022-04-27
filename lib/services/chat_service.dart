@@ -56,7 +56,7 @@ class ChatService extends ChangeNotifier {
   Future _sendMessage(LocalMessage message) async {
     var encryptedNetworkMessage =
         await NetworkMessage.fromLocalmessage(message, conversation.secretKey);
-    await GetIt.I.get<StorageService>().storeMessage(message, '');
+    await GetIt.I.get<StorageService>().storeMessage(message);
     messageService.sendMessage(encryptedNetworkMessage);
   }
 }

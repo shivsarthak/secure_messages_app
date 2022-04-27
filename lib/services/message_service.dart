@@ -29,9 +29,7 @@ class MessageService {
           var localMessage =
               await GetIt.I.get<CryptoService>().decryptNetworkMessage(msg);
 
-          await GetIt.I
-              .get<StorageService>()
-              .storeMessage(localMessage, msg.senderPubKeyString);
+          await GetIt.I.get<StorageService>().storeMessage(localMessage);
         });
       }
     });
@@ -67,9 +65,7 @@ class MessageService {
           Map<String, dynamic> json = Map.from(event.snapshot.value as Map);
           NetworkMessage msg = NetworkMessage.fromJson(json);
           crypto.decryptNetworkMessage(msg).then((val) {
-            GetIt.I
-                .get<StorageService>()
-                .storeMessage(val, msg.senderPubKeyString);
+            GetIt.I.get<StorageService>().storeMessage(val);
           });
 
           return Transaction.success(null);

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get_it/get_it.dart';
+import 'package:secretic/models/conversation_request_model.dart';
 import 'package:secretic/models/local_mesage_model.dart';
 import 'package:secretic/models/conversation_model.dart';
 
@@ -12,36 +13,62 @@ import 'package:sqflite/sqflite.dart';
 class StorageService with ChangeNotifier {
   late Database db;
   List<Conversation> conversations = [];
+  List<ConversationRequest> requests = [];
 
-  Future<StorageService> init() async {
-    var database = await openDatabase(
-      'secure_messages_a.db',
-      version: 3,
-      onCreate: (db, version) async {
-        await db.execute('''CREATE TABLE Conversations (
+  Future createDatabase(Database db, int version) async {
+    await db.execute('''CREATE TABLE Conversations (
               id INTEGER PRIMARY KEY, 
               conversationID TEXT type NOT NULL,
               recipientUID TEXT type NOT NULL,
               nickname TEXT,
               last_message TEXT,
               display_content TEXT,
-              pub_key TEXT,
+              secure INTEGER not NULL,
               secret_key TEXT
               )
             ''');
 
-        await db.execute('''CREATE TABLE Chat_Messages (
+    await db.execute('''CREATE TABLE Chat_Messages (
               id INTEGER PRIMARY KEY, 
               conversationID TEXT type NOT NULL,
               timestamp TEXT type NOT NULL,
               messageData TEXT
               )
             ''');
-      },
-    );
+
+    await db.execute('''CREATE TABLE Requests (
+              id INTEGER PRIMARY KEY, 
+              conversationID TEXT type NOT NULL,
+              recipientUID TEXT type NOT NULL,
+              nickname TEXT,
+              timestamp TEXT
+              )
+            ''');
+  }
+
+  Future<StorageService> init() async {
+    var database = await openDatabase('secure_messages.db',
+        version: 5, onCreate: createDatabase,
+        onUpgrade: (db, oldVersion, newVersion) async {
+      //TODO: Change logic for backwords compatibility
+      await deleteDatabase(db.path);
+      await createDatabase(db, newVersion);
+    });
     db = database;
 
     return this;
+  }
+
+  Future<SecretKey?> getSecretKey(String conversationID) async {
+    var result = await db.query(
+      'Conversations',
+      columns: ['secret_key'],
+      where: 'conversationID = "$conversationID"',
+    );
+    if (result.isEmpty) {
+      return SecretKey(base64Decode(result.toString()));
+    }
+    return null;
   }
 
   Future<List<Conversation>> getConversations() async {
@@ -55,51 +82,59 @@ class StorageService with ChangeNotifier {
         pub_key FROM Conversations 
         ORDER BY last_message DESC''',
     );
+
+    var requestResults = await db.query('Requests', orderBy: "timestamp DESC");
     conversations = result.map((e) => Conversation.fromJSON(e)).toList();
+    requests =
+        requestResults.map((e) => ConversationRequest.fromJSON(e)).toList();
     notifyListeners();
     return conversations;
   }
 
   Future createConversation(Conversation conversation) async {
     await db.insert('Conversations', await conversation.toJSON(DateTime.now()));
+    //TODO: Send a handshake request
     getConversations();
     notifyListeners();
   }
 
-  Future storeMessage(LocalMessage message, String senderPubKey) async {
+  Future addToRequest(ConversationRequest request) async {
+    await db.insert('Requests', await request.toJSON(DateTime.now()));
+    getConversations();
+    notifyListeners();
+  }
+
+  Future sendHandshakeRequest(Conversation conversation) async {}
+
+  Future completeHandshake(Conversation conversation) async {}
+
+  Future storeMessage(LocalMessage message) async {
     var res = await db.rawQuery(
         "SELECT * from Conversations where conversationID = '${message.conversationID}'");
     if (res.isEmpty) {
-      var pubKey = SimplePublicKey(base64.decode(senderPubKey),
-          type: KeyPairType.x25519);
-      CryptoService crypto = GetIt.I.get<CryptoService>();
-      var secretKey = await crypto.sharedSecretKey(pubKey);
-
-      Conversation conversation = Conversation(
-          secretKey: secretKey,
+      ConversationRequest request = ConversationRequest(
           conversationID: message.conversationID,
           recipientUID: message.senderUID,
-          publicKey: pubKey,
-          displayContent: message.messageContent,
-          lastMessage: message.timestamp);
-      createConversation(conversation);
-    }
-    await db.transaction((txn) async {
-      await txn.insert(
-        "Chat_Messages",
-        message.toLocalJSON(),
-      );
-      await txn.update(
-          'Conversations',
-          {
-            'display_content': message.messageContent,
-            'last_message': message.timestamp.toIso8601String()
-          },
-          where: 'conversationID = "${message.conversationID}"');
-    });
+          timestamp: message.timestamp);
+      addToRequest(request);
+    } else {
+      await db.transaction((txn) async {
+        await txn.insert(
+          "Chat_Messages",
+          message.toLocalJSON(),
+        );
+        await txn.update(
+            'Conversations',
+            {
+              'display_content': message.messageContent,
+              'last_message': message.timestamp.toIso8601String()
+            },
+            where: 'conversationID = "${message.conversationID}"');
+      });
 
-    getConversations();
-    return;
+      getConversations();
+      return;
+    }
   }
 
   Future<List<LocalMessage>> getConversationMessages(
