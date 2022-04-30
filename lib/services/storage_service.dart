@@ -1,13 +1,17 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get_it/get_it.dart';
+
 import 'package:secretic/models/conversation_request_model.dart';
 import 'package:secretic/models/local_mesage_model.dart';
 import 'package:secretic/models/conversation_model.dart';
+import 'package:secretic/models/network_message_model.dart';
+import 'package:secretic/services/authentication_service.dart';
+import 'package:secretic/services/message_service.dart';
 
-import 'package:secretic/services/crypto_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 class StorageService with ChangeNotifier {
@@ -60,27 +64,29 @@ class StorageService with ChangeNotifier {
   }
 
   Future<SecretKey?> getSecretKey(String conversationID) async {
-    var result = await db.query(
-      'Conversations',
-      columns: ['secret_key'],
-      where: 'conversationID = "$conversationID"',
+    var result = await db.rawQuery(
+      '''SELECT secret_key
+         FROM Conversations 
+         WHERE conversationID = "$conversationID"
+       ''',
     );
-    if (result.isEmpty) {
-      return SecretKey(base64Decode(result.toString()));
+    if (result.isNotEmpty) {
+      return SecretKey(base64Decode(result[0]['secret_key'].toString()));
     }
     return null;
   }
 
-  Future<List<Conversation>> getConversations() async {
+  Future getConversations() async {
     var result = await db.rawQuery(
       '''SELECT conversationID,
         recipientUID,
         nickname , 
         last_message,
         display_content,
-        secret_key,
-        pub_key FROM Conversations 
-        ORDER BY last_message DESC''',
+        secret_key
+         FROM Conversations 
+        ORDER BY last_message DESC
+        ''',
     );
 
     var requestResults = await db.query('Requests', orderBy: "timestamp DESC");
@@ -88,25 +94,47 @@ class StorageService with ChangeNotifier {
     requests =
         requestResults.map((e) => ConversationRequest.fromJSON(e)).toList();
     notifyListeners();
-    return conversations;
+  }
+
+  Future toggleSecureStatus(String conversationId) async {
+    await db.update('Conversations', {'secure': true},
+        where: 'conversationID = "$conversationId"');
+    getConversations();
   }
 
   Future createConversation(Conversation conversation) async {
     await db.insert('Conversations', await conversation.toJSON(DateTime.now()));
-    //TODO: Send a handshake request
-    getConversations();
+    var networkMessage = NetworkMessage(
+      conversationID: conversation.conversationID,
+      encryptedMessage: '',
+      handshakeState: HandshakeState.request,
+      recieverUID: conversation.recipientUID,
+      senderUID: GetIt.I.get<AuthenticationService>().user.uid,
+      timestamp: DateTime.now(),
+      type: ContentType.handshake,
+    );
+    await MessageService().sendMessage(networkMessage);
+    await getConversations();
     notifyListeners();
   }
 
   Future addToRequest(ConversationRequest request) async {
     await db.insert('Requests', await request.toJSON(DateTime.now()));
-    getConversations();
+    await getConversations();
     notifyListeners();
   }
 
-  Future sendHandshakeRequest(Conversation conversation) async {}
+  Future approveRequest(ConversationRequest request, SecretKey key) async {
+    await db.transaction((txn) async {
+      await txn.delete('Requests',
+          where: 'conversationID = "${request.conversationID}"');
+      var data = await request.toConversation(key).toJSON(DateTime.now());
 
-  Future completeHandshake(Conversation conversation) async {}
+      await txn.insert('Conversations', data);
+      return txn;
+    });
+    await getConversations();
+  }
 
   Future storeMessage(LocalMessage message) async {
     var res = await db.rawQuery(
@@ -132,7 +160,7 @@ class StorageService with ChangeNotifier {
             where: 'conversationID = "${message.conversationID}"');
       });
 
-      getConversations();
+      await getConversations();
       return;
     }
   }
@@ -152,6 +180,7 @@ class StorageService with ChangeNotifier {
   deleteData() async {
     await db.rawDelete('Delete from Conversations');
     await db.rawDelete('Delete from Chat_Messages');
+    await db.rawDelete('Delete from Requests');
     await getConversations();
   }
 

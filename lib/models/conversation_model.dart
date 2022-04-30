@@ -6,12 +6,13 @@ class Conversation {
   final String conversationID;
   final String recipientUID;
   final String? nickname;
-
+  final bool secure;
   final DateTime lastMessage;
   final String displayContent;
   final SecretKey secretKey;
 
   Conversation({
+    required this.secure,
     required this.lastMessage,
     required this.displayContent,
     required this.secretKey,
@@ -26,6 +27,7 @@ class Conversation {
     return Conversation(
       displayContent: map['display_content'].toString(),
       lastMessage: DateTime.parse(map['last_message'].toString()),
+      secure: map['secure'] == 1,
       secretKey: key,
       conversationID: map['conversationID'].toString(),
       nickname: map['nickname'].toString(),
@@ -35,6 +37,7 @@ class Conversation {
 
   Future<Map<String, Object?>> toJSON(DateTime lastMessage) async {
     Map<String, Object?> json = {
+      'secure': secure ? 1 : 0,
       'conversationID': conversationID,
       'nickname': nickname,
       'recipientUID': recipientUID,

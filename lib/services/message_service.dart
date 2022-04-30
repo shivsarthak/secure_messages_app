@@ -1,5 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:get_it/get_it.dart';
+import 'package:secretic/models/conversation_request_model.dart';
 
 import 'package:secretic/models/network_message_model.dart';
 import 'package:secretic/services/authentication_service.dart';
@@ -8,6 +9,39 @@ import 'package:secretic/services/storage_service.dart';
 
 class MessageService {
   final FirebaseDatabase database = FirebaseDatabase.instance;
+
+  Future handleMessage(NetworkMessage msg) async {
+    StorageService storageService = GetIt.I.get<StorageService>();
+    if (msg.type == ContentType.message) {
+      var sharedKey = await storageService.getSecretKey(msg.conversationID);
+      print(sharedKey);
+      if (sharedKey != null) {
+        var localMessage = await GetIt.I
+            .get<CryptoService>()
+            .decryptNetworkMessage(msg, sharedKey);
+
+        storageService.storeMessage(localMessage);
+      } else {
+        throw UnimplementedError('No Shared Key found');
+      }
+    } else if (msg.type == ContentType.handshake) {
+      switch (msg.handshakeState) {
+        case HandshakeState.request:
+          ConversationRequest request = ConversationRequest(
+              timestamp: msg.timestamp,
+              conversationID: msg.conversationID,
+              recipientUID: msg.senderUID);
+          await storageService.addToRequest(request);
+          break;
+        case HandshakeState.accepted:
+          await storageService.toggleSecureStatus(msg.conversationID);
+          break;
+        case HandshakeState.none:
+          // TODO: Handle this case.
+          break;
+      }
+    }
+  }
 
   Future<void> getAllNewMessages(String uid) async {
     Map<String, dynamic>? _messages;
@@ -26,10 +60,7 @@ class MessageService {
         _messages!.forEach((key, value) async {
           Map<String, dynamic> json = Map.from(value as Map);
           NetworkMessage msg = NetworkMessage.fromJson(json);
-          var localMessage =
-              await GetIt.I.get<CryptoService>().decryptNetworkMessage(msg);
-
-          await GetIt.I.get<StorageService>().storeMessage(localMessage);
+          await handleMessage(msg);
         });
       }
     });
@@ -54,7 +85,6 @@ class MessageService {
     String uid = GetIt.I<AuthenticationService>().user.uid;
     return database.ref('users/$uid/new_messages').onChildAdded.listen(
       (event) async {
-        CryptoService crypto = GetIt.I.get<CryptoService>();
         database
             .ref()
             .child("users/$uid/new_messages")
@@ -64,10 +94,7 @@ class MessageService {
           }
           Map<String, dynamic> json = Map.from(event.snapshot.value as Map);
           NetworkMessage msg = NetworkMessage.fromJson(json);
-          crypto.decryptNetworkMessage(msg).then((val) {
-            GetIt.I.get<StorageService>().storeMessage(val);
-          });
-
+          handleMessage(msg);
           return Transaction.success(null);
         });
       },

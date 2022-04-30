@@ -3,12 +3,14 @@ import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 
 import 'package:secretic/models/conversation_model.dart';
+import 'package:secretic/models/conversation_request_model.dart';
 import 'package:secretic/models/user_model.dart';
 import 'package:secretic/screens/chat_screen.dart';
 import 'package:secretic/screens/profile_screen.dart';
 import 'package:secretic/screens/widgets/drawer.dart';
 
 import 'package:secretic/screens/widgets/new_conversation_modal.dart';
+import 'package:secretic/services/crypto_service.dart';
 import 'package:secretic/services/storage_service.dart';
 import 'package:secretic/styles.dart';
 
@@ -22,6 +24,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with AutomaticKeepAliveClientMixin {
   List<Conversation> _conversations = [];
+  List<ConversationRequest> _requests = [];
   final StorageService _store = GetIt.I.get<StorageService>();
 
   @override
@@ -30,6 +33,7 @@ class _HomeScreenState extends State<HomeScreen>
     _store.addListener(() {
       setState(() {
         _conversations = _store.conversations;
+        _requests = _store.requests;
       });
     });
   }
@@ -97,22 +101,33 @@ class _HomeScreenState extends State<HomeScreen>
   Widget _body() {
     return Stack(
       children: [
-        Container(
-          decoration: BoxDecoration(
-            gradient: primaryGradient,
-          ),
+        Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: TabBarView(children: [
+            ListView.separated(
+                itemBuilder: ((context, index) =>
+                    ConversationTile(_conversations[index])),
+                separatorBuilder: (BuildContext context, int index) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                      child: Divider(
+                        color: accentGrey.withOpacity(0.3),
+                        thickness: 0.5,
+                      ),
+                    ),
+                itemCount: _conversations.length),
+            ListView.separated(
+                itemBuilder: ((context, index) =>
+                    RequestTile(_requests[index])),
+                separatorBuilder: (BuildContext context, int index) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                      child: Divider(
+                        color: accentGrey.withOpacity(0.3),
+                        thickness: 0.5,
+                      ),
+                    ),
+                itemCount: _requests.length),
+          ]),
         ),
-        ListView.separated(
-            itemBuilder: ((context, index) =>
-                ConversationTile(_conversations[index])),
-            separatorBuilder: (BuildContext context, int index) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                  child: Divider(
-                    color: accentGrey.withOpacity(0.3),
-                    thickness: 0.5,
-                  ),
-                ),
-            itemCount: _conversations.length),
       ],
     );
   }
@@ -144,7 +159,7 @@ class ConversationTile extends StatelessWidget {
         backgroundColor: white,
       ),
       title: Text(
-        "John Doe",
+        conversation.conversationID,
         style:
             TextStyle(color: white, fontWeight: FontWeight.w700, fontSize: 14),
       ),
@@ -159,5 +174,52 @@ class ConversationTile extends StatelessWidget {
             TextStyle(color: white, fontWeight: FontWeight.w400, fontSize: 10),
       ),
     );
+  }
+}
+
+class RequestTile extends StatelessWidget {
+  final ConversationRequest conversation;
+  const RequestTile(
+    this.conversation, {
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final f = DateFormat('hh:mm a');
+    return ListTile(
+        leading: CircleAvatar(
+          radius: 26,
+          backgroundColor: white,
+        ),
+        title: Text(
+          conversation.conversationID,
+          style: TextStyle(
+              color: white, fontWeight: FontWeight.w700, fontSize: 14),
+        ),
+        subtitle: Text(
+          f.format(conversation.timestamp),
+          style: TextStyle(
+              color: white, fontWeight: FontWeight.w400, fontSize: 10),
+        ),
+        trailing: GestureDetector(
+          onTap: () async {
+            Navigator.of(context)
+                .push<UserModel?>(
+                    MaterialPageRoute(builder: (context) => QRScanScreen()))
+                .then((value) async {
+              if (value != null) {
+                print(value.publicKey);
+                var secretKey = await GetIt.I
+                    .get<CryptoService>()
+                    .sharedSecretKey(value.publicKey);
+                await GetIt.I
+                    .get<StorageService>()
+                    .approveRequest(conversation, secretKey);
+              }
+            });
+          },
+          child: Icon(Icons.qr_code_scanner),
+        ));
   }
 }

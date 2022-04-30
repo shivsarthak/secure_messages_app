@@ -1,3 +1,6 @@
+import 'package:cryptography/cryptography.dart';
+import 'package:secretic/models/conversation_model.dart';
+
 class ConversationRequest {
   final String conversationID;
   final String recipientUID;
@@ -28,5 +31,16 @@ class ConversationRequest {
       'timestamp': lastMessage.toIso8601String(),
     };
     return json;
+  }
+
+  Conversation toConversation(SecretKey key) {
+    return Conversation(
+        secure: true,
+        lastMessage: DateTime.now(),
+        nickname: nickname,
+        displayContent: '',
+        secretKey: key,
+        conversationID: conversationID,
+        recipientUID: recipientUID);
   }
 }

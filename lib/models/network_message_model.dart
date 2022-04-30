@@ -5,16 +5,21 @@ import 'package:secretic/models/local_mesage_model.dart';
 
 import 'package:secretic/services/crypto_service.dart';
 
+enum ContentType { message, handshake }
+enum HandshakeState { request, accepted, none }
+
 class NetworkMessage {
-  final String senderPubKeyString;
   final String encryptedMessage;
   final String conversationID;
   final String senderUID;
   final String recieverUID;
   final DateTime timestamp;
+  final ContentType type;
+  final HandshakeState handshakeState;
 
   NetworkMessage({
-    required this.senderPubKeyString,
+    required this.handshakeState,
+    required this.type,
     required this.conversationID,
     required this.timestamp,
     required this.senderUID,
@@ -24,7 +29,8 @@ class NetworkMessage {
 
   factory NetworkMessage.fromJson(Map<String, dynamic> json) {
     return NetworkMessage(
-      senderPubKeyString: json['sender_pub_key'],
+      type: ContentType.values.byName(json['type']),
+      handshakeState: HandshakeState.values.byName(json['handshake_state']),
       conversationID: json['cid'].toString(),
       timestamp: DateTime.parse(json['timestamp'].toString()),
       senderUID: json['suid'],
@@ -35,7 +41,8 @@ class NetworkMessage {
 
   Map<String, dynamic> toJSON() {
     Map<String, dynamic> messageData = {
-      'sender_pub_key': senderPubKeyString,
+      'handshake_state': handshakeState.name,
+      'type': type.name,
       'cid': conversationID,
       'timestamp': timestamp.toIso8601String(),
       'suid': senderUID,
@@ -48,7 +55,6 @@ class NetworkMessage {
   static Future<NetworkMessage> fromLocalmessage(
       LocalMessage message, SecretKey secretKey) async {
     CryptoService cryptoService = GetIt.I.get<CryptoService>();
-
     return await cryptoService.encryptLocalMessage(message, secretKey);
   }
 }

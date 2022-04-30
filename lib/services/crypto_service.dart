@@ -9,6 +9,7 @@ import 'package:secretic/models/network_message_model.dart';
 import 'package:secretic/options.dart';
 
 import 'package:secretic/services/authentication_service.dart';
+import 'package:secretic/services/message_service.dart';
 
 class CryptoService {
   late SimpleKeyPair keyPair;
@@ -89,19 +90,15 @@ class CryptoService {
   }
 
   Future<LocalMessage> decryptNetworkMessage(
-      NetworkMessage networkMessage) async {
+      NetworkMessage networkMessage, SecretKey sharedKey) async {
     String uid = GetIt.I<AuthenticationService>().user.uid;
-    var sharedkey = await sharedSecretKey(SimplePublicKey(
-      base64.decode(networkMessage.senderPubKeyString),
-      type: KeyPairType.x25519,
-    ));
+
     SecretBox secretBox = SecretBox.fromConcatenation(
         base64Decode(networkMessage.encryptedMessage),
         nonceLength: 16,
         macLength: 32);
 
-    var bytesList = await encryption.decrypt(secretBox, secretKey: sharedkey);
-
+    var bytesList = await encryption.decrypt(secretBox, secretKey: sharedKey);
     LocalMessage message = LocalMessage(
       conversationID: networkMessage.conversationID,
       timestamp: networkMessage.timestamp,
@@ -124,7 +121,8 @@ class CryptoService {
     );
 
     return NetworkMessage(
-      senderPubKeyString: base64.encode(publicKey.bytes),
+      type: ContentType.message,
+      handshakeState: HandshakeState.none,
       conversationID: message.conversationID,
       timestamp: message.timestamp,
       senderUID: message.senderUID,
