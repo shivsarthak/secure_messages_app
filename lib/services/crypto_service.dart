@@ -9,7 +9,6 @@ import 'package:secretic/models/network_message_model.dart';
 import 'package:secretic/options.dart';
 
 import 'package:secretic/services/authentication_service.dart';
-import 'package:secretic/services/message_service.dart';
 
 class CryptoService {
   late SimpleKeyPair keyPair;

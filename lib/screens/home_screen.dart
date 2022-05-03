@@ -6,7 +6,6 @@ import 'package:secretic/models/conversation_model.dart';
 import 'package:secretic/models/conversation_request_model.dart';
 import 'package:secretic/models/user_model.dart';
 import 'package:secretic/screens/chat_screen.dart';
-import 'package:secretic/screens/profile_screen.dart';
 import 'package:secretic/screens/widgets/drawer.dart';
 
 import 'package:secretic/screens/widgets/new_conversation_modal.dart';
@@ -209,7 +208,6 @@ class RequestTile extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => QRScanScreen()))
                 .then((value) async {
               if (value != null) {
-                print(value.publicKey);
                 var secretKey = await GetIt.I
                     .get<CryptoService>()
                     .sharedSecretKey(value.publicKey);

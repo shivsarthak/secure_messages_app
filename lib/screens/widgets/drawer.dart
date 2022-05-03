@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:secretic/models/user_model.dart';
 import 'package:secretic/screens/profile_screen.dart';
+import 'package:secretic/services/authentication_service.dart';
+
 import 'package:secretic/services/storage_service.dart';
 
 class CustomDrawer extends StatefulWidget {
@@ -11,14 +14,15 @@ class CustomDrawer extends StatefulWidget {
 }
 
 class _CustomDrawerState extends State<CustomDrawer> {
+  AuthenticationService user = GetIt.I.get<AuthenticationService>();
   @override
   Widget build(BuildContext context) {
     return Drawer(
       child: Column(
         children: [
           UserAccountsDrawerHeader(
-            accountEmail: Text("test@test.com"),
-            accountName: Text("Test"),
+            accountName: Text(user.user.uid),
+            accountEmail: Text(user.userModel.nickname ?? "User"),
           ),
           ListTile(
             leading: Icon(Icons.qr_code),

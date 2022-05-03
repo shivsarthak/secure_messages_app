@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter/cupertino.dart';
@@ -81,6 +80,7 @@ class StorageService with ChangeNotifier {
       '''SELECT conversationID,
         recipientUID,
         nickname , 
+        secure,
         last_message,
         display_content,
         secret_key
@@ -99,6 +99,7 @@ class StorageService with ChangeNotifier {
   Future toggleSecureStatus(String conversationId) async {
     await db.update('Conversations', {'secure': true},
         where: 'conversationID = "$conversationId"');
+
     getConversations();
   }
 
@@ -133,6 +134,16 @@ class StorageService with ChangeNotifier {
       await txn.insert('Conversations', data);
       return txn;
     });
+    var networkMessage = NetworkMessage(
+      conversationID: request.conversationID,
+      encryptedMessage: '',
+      handshakeState: HandshakeState.accepted,
+      recieverUID: request.recipientUID,
+      senderUID: GetIt.I.get<AuthenticationService>().user.uid,
+      timestamp: DateTime.now(),
+      type: ContentType.handshake,
+    );
+    await MessageService().sendMessage(networkMessage);
     await getConversations();
   }
 

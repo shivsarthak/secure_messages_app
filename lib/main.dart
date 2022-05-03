@@ -16,12 +16,14 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  GetIt.I.registerSingletonAsync<AuthenticationService>(
-      () async => AuthenticationService().init());
-  GetIt.I.registerSingletonAsync<CryptoService>(
-      () async => CryptoService().init());
   GetIt.I.registerSingletonAsync<StorageService>(
-      () async => StorageService().init());
+      () async => await StorageService().init());
+  GetIt.I.registerSingletonAsync<CryptoService>(
+      () async => await CryptoService().init());
+  GetIt.I.registerSingletonAsync<AuthenticationService>(
+      () async => await AuthenticationService().init(),
+      dependsOn: [CryptoService]);
+
   runApp(App());
 }
 

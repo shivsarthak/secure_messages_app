@@ -6,8 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:secretic/enums/message_type.dart';
 import 'package:secretic/models/local_mesage_model.dart';
 import 'package:secretic/models/conversation_model.dart';
+import 'package:secretic/screens/widgets/qr_display.dart';
 import 'package:secretic/services/chat_service.dart';
-import 'package:secretic/services/crypto_service.dart';
 import 'package:secretic/styles.dart';
 
 import '../services/authentication_service.dart';
@@ -31,7 +31,7 @@ class _ChatScreenState extends State<ChatScreen> {
       create: (BuildContext context) => ChatService(widget.conversation),
       builder: (context, _) => Scaffold(
         backgroundColor: grey,
-        appBar: _appBar(context),
+        appBar: _appBar(context, widget.conversation),
         body: _appBody(context),
       ),
     );
@@ -41,82 +41,112 @@ class _ChatScreenState extends State<ChatScreen> {
     TextEditingController controller = TextEditingController();
     final ChatService chatService =
         Provider.of<ChatService>(context, listen: true);
-    return Stack(
-      children: [
-        Container(
-          decoration: BoxDecoration(gradient: primaryGradient),
-        ),
-        Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: <Widget>[
-            _ConversationSpace(),
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    margin: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                        color: grey,
-                        border: Border.all(
-                          width: 1,
-                          color: primaryColor,
-                        ),
-                        borderRadius: BorderRadius.circular(24)),
-                    width: double.infinity,
-                    child: Row(
-                      children: <Widget>[
-                        SizedBox(
-                          width: 15,
-                        ),
-                        Expanded(
-                          child: TextField(
-                            controller: controller,
-                            decoration: InputDecoration(
-                                hintText: "Message...",
-                                hintStyle: TextStyle(color: white),
-                                border: InputBorder.none),
+    if (chatService.conversation.secure) {
+      return Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(gradient: primaryGradient),
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              _ConversationSpace(),
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      margin: EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                          color: grey,
+                          border: Border.all(
+                            width: 1,
+                            color: primaryColor,
                           ),
-                        ),
-                        SizedBox(
-                          width: 15,
-                        ),
-                      ],
+                          borderRadius: BorderRadius.circular(24)),
+                      width: double.infinity,
+                      child: Row(
+                        children: <Widget>[
+                          SizedBox(
+                            width: 15,
+                          ),
+                          Expanded(
+                            child: TextField(
+                              controller: controller,
+                              decoration: InputDecoration(
+                                  hintText: "Message...",
+                                  hintStyle: TextStyle(color: white),
+                                  border: InputBorder.none),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 15,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                FloatingActionButton(
-                  mini: true,
-                  onPressed: () async {
-                    if (controller.text.isNotEmpty) {
-                      LocalMessage message = LocalMessage(
-                        conversationID: widget.conversation.conversationID,
-                        messageContent: controller.text,
-                        messageType: MessageType.sent,
-                        recieverUID: widget.conversation.recipientUID,
-                        senderUID: uid,
-                        timestamp: DateTime.now(),
-                      );
-                      controller.clear();
-                      chatService.sendMessageToConversation(message);
-                    }
-                  },
-                  child: Icon(
-                    Icons.send,
-                    color: Colors.white,
-                    size: 18,
+                  FloatingActionButton(
+                    mini: true,
+                    onPressed: () async {
+                      if (controller.text.isNotEmpty) {
+                        LocalMessage message = LocalMessage(
+                          conversationID: widget.conversation.conversationID,
+                          messageContent: controller.text,
+                          messageType: MessageType.sent,
+                          recieverUID: widget.conversation.recipientUID,
+                          senderUID: uid,
+                          timestamp: DateTime.now(),
+                        );
+                        controller.clear();
+                        chatService.sendMessageToConversation(message);
+                      }
+                    },
+                    child: Icon(
+                      Icons.send,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    backgroundColor: accentColor,
+                    elevation: 0,
                   ),
-                  backgroundColor: accentColor,
-                  elevation: 0,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
+                ],
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24)),
+                child: Center(child: QRDisplay()),
+              ),
+            ],
+          ),
+          SizedBox(height: 24),
+          Text(
+            "Ask recipient to scan this QR Code to establish a secure connection",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: white, fontSize: 18, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
     );
   }
 
-  AppBar _appBar(BuildContext context) {
+  AppBar _appBar(BuildContext context, Conversation conversation) {
     return AppBar(
       elevation: 0,
       automaticallyImplyLeading: false,
@@ -151,7 +181,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     Text(
-                      "John Doe",
+                      conversation.nickname ?? "User",
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                           fontSize: 16,

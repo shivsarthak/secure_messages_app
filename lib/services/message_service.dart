@@ -14,7 +14,7 @@ class MessageService {
     StorageService storageService = GetIt.I.get<StorageService>();
     if (msg.type == ContentType.message) {
       var sharedKey = await storageService.getSecretKey(msg.conversationID);
-      print(sharedKey);
+
       if (sharedKey != null) {
         var localMessage = await GetIt.I
             .get<CryptoService>()
