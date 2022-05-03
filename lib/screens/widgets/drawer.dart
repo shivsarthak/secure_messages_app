@@ -14,15 +14,36 @@ class CustomDrawer extends StatefulWidget {
 }
 
 class _CustomDrawerState extends State<CustomDrawer> {
-  AuthenticationService user = GetIt.I.get<AuthenticationService>();
+  AuthenticationService _user = GetIt.I.get<AuthenticationService>();
+  late UserModel user;
+  @override
+  void initState() {
+    user = _user.userModel;
+    _user.addListener(() {
+      setState(() {
+        user = _user.userModel;
+      });
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _user.removeListener(() {});
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
       child: Column(
         children: [
           UserAccountsDrawerHeader(
-            accountName: Text(user.user.uid),
-            accountEmail: Text(user.userModel.nickname ?? "User"),
+            accountName: Text(user.nickname ?? "User"),
+            accountEmail: Text(
+              user.uid,
+              style: TextStyle(fontSize: 12),
+            ),
           ),
           ListTile(
             leading: Icon(Icons.qr_code),

@@ -158,7 +158,7 @@ class ConversationTile extends StatelessWidget {
         backgroundColor: white,
       ),
       title: Text(
-        conversation.conversationID,
+        conversation.nickname ?? conversation.recipientUID,
         style:
             TextStyle(color: white, fontWeight: FontWeight.w700, fontSize: 14),
       ),

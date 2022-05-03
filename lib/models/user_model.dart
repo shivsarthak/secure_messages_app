@@ -3,10 +3,14 @@ import 'package:cryptography/cryptography.dart';
 
 class UserModel {
   final String uid;
-  final String? nickname;
+  String? nickname;
   final SimplePublicKey publicKey;
 
   UserModel(this.uid, this.nickname, this.publicKey);
+
+  setNickname(String name) {
+    nickname = name;
+  }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(

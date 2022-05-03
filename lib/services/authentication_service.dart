@@ -1,10 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:secretic/models/user_model.dart';
 import 'package:secretic/services/crypto_service.dart';
 
-class AuthenticationService {
+class AuthenticationService with ChangeNotifier {
   late User user;
   late UserModel userModel;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -12,6 +13,8 @@ class AuthenticationService {
   Future updateNickname(String nickname) async {
     final storage = FlutterSecureStorage();
     await storage.write(key: 'nickname_secretic', value: nickname);
+    userModel.setNickname(nickname);
+    notifyListeners();
   }
 
   Future<AuthenticationService> init() async {
