@@ -81,7 +81,7 @@ class MessageService {
     return messageID;
   }
 
-  messageStream() async {
+  Future messageStream() async {
     String uid = GetIt.I<AuthenticationService>().user.uid;
     return database.ref('users/$uid/new_messages').onChildAdded.listen(
       (event) async {

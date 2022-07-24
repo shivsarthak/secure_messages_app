@@ -52,18 +52,7 @@ class App extends StatelessWidget {
           )),
       debugShowCheckedModeBanner: false,
       title: 'Secretic',
-      home: FutureBuilder(
-          future: GetIt.I.allReady(),
-          builder: ((context, snapshot) {
-            if (snapshot.hasData) {
-              MessageService().getAllNewMessages(
-                  GetIt.I.get<AuthenticationService>().user.uid);
-              MessageService().messageStream();
-              GetIt.I.get<StorageService>().getConversations();
-              return HomeScreen();
-            }
-            return SplashScreen();
-          })),
+      home: SplashScreen(),
     );
   }
 }

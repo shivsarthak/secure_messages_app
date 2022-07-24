@@ -29,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
+    _store.getConversations();
     _store.addListener(() {
       setState(() {
         _conversations = _store.conversations;
@@ -45,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen>
       length: 2,
       child: Scaffold(
         key: _scaffoldKey,
-        backgroundColor: grey,
+        backgroundColor: white,
         appBar: _appBar(_scaffoldKey),
         body: _body(),
         drawer: CustomDrawer(),
@@ -56,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   AppBar _appBar(GlobalKey<ScaffoldState> _scaffoldKey) {
     return AppBar(
-      backgroundColor: Colors.transparent,
+      backgroundColor: grey,
       leading: IconButton(
         icon: Icon(Icons.menu),
         onPressed: () {
@@ -90,7 +91,12 @@ class _HomeScreenState extends State<HomeScreen>
             .push(MaterialPageRoute(builder: (context) => QRScanScreen()))
             .then((value) {
           if (value.runtimeType == UserModel) {
-            confirmAddUserDialog(context, value);
+            showDialog<void>(
+                context: context,
+                barrierDismissible: false, // user must tap button!
+                builder: (BuildContext context) {
+                  return AddUserDialog(user: value);
+                });
           }
         });
       },
@@ -146,31 +152,28 @@ class ConversationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final f = DateFormat('hh:mm a');
     return ListTile(
-      onLongPress: () {
-        GetIt.I.get<StorageService>().deleteConversation(conversation);
-      },
       onTap: () {
         Navigator.push(context,
             MaterialPageRoute(builder: (context) => ChatScreen(conversation)));
       },
       leading: CircleAvatar(
         radius: 26,
-        backgroundColor: white,
+        backgroundColor: grey,
       ),
       title: Text(
         conversation.nickname ?? conversation.recipientUID,
         style:
-            TextStyle(color: white, fontWeight: FontWeight.w700, fontSize: 14),
+            TextStyle(color: grey, fontWeight: FontWeight.w700, fontSize: 14),
       ),
       subtitle: Text(
         conversation.displayContent,
         style:
-            TextStyle(color: white, fontWeight: FontWeight.w400, fontSize: 12),
+            TextStyle(color: grey, fontWeight: FontWeight.w400, fontSize: 12),
       ),
       trailing: Text(
         f.format(conversation.lastMessage),
         style:
-            TextStyle(color: white, fontWeight: FontWeight.w400, fontSize: 10),
+            TextStyle(color: grey, fontWeight: FontWeight.w400, fontSize: 10),
       ),
     );
   }
@@ -189,17 +192,17 @@ class RequestTile extends StatelessWidget {
     return ListTile(
         leading: CircleAvatar(
           radius: 26,
-          backgroundColor: white,
+          backgroundColor: grey,
         ),
         title: Text(
-          conversation.conversationID,
-          style: TextStyle(
-              color: white, fontWeight: FontWeight.w700, fontSize: 14),
+          conversation.recipientUID,
+          style:
+              TextStyle(color: grey, fontWeight: FontWeight.w700, fontSize: 14),
         ),
         subtitle: Text(
           f.format(conversation.timestamp),
-          style: TextStyle(
-              color: white, fontWeight: FontWeight.w400, fontSize: 10),
+          style:
+              TextStyle(color: grey, fontWeight: FontWeight.w400, fontSize: 10),
         ),
         trailing: GestureDetector(
           onTap: () async {
@@ -213,11 +216,14 @@ class RequestTile extends StatelessWidget {
                     .sharedSecretKey(value.publicKey);
                 await GetIt.I
                     .get<StorageService>()
-                    .approveRequest(conversation, secretKey);
+                    .approveRequest(conversation, secretKey, value.nickname!);
               }
             });
           },
-          child: Icon(Icons.qr_code_scanner),
+          child: Icon(
+            Icons.qr_code_scanner,
+            color: grey,
+          ),
         ));
   }
 }

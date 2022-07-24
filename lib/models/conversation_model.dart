@@ -5,7 +5,7 @@ import 'package:cryptography/cryptography.dart';
 class Conversation {
   final String conversationID;
   final String recipientUID;
-  final String? nickname;
+  String? nickname;
   final bool secure;
   final DateTime lastMessage;
   final String displayContent;
@@ -23,7 +23,7 @@ class Conversation {
 
   factory Conversation.fromJSON(Map<String, Object?> map) {
     final key = SecretKey(base64Decode(map['secret_key'].toString()));
-
+    print(map);
     return Conversation(
       displayContent: map['display_content'].toString(),
       lastMessage: DateTime.parse(map['last_message'].toString()),
@@ -33,6 +33,10 @@ class Conversation {
       nickname: map['nickname'].toString(),
       recipientUID: map['recipientUID'].toString(),
     );
+  }
+
+  void setNickname(String nickname) {
+    this.nickname = nickname;
   }
 
   Future<Map<String, Object?>> toJSON(DateTime lastMessage) async {

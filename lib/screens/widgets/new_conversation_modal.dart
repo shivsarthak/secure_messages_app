@@ -10,58 +10,76 @@ import 'package:secretic/services/authentication_service.dart';
 import 'package:secretic/services/crypto_service.dart';
 import 'package:secretic/services/storage_service.dart';
 
-Future<void> confirmAddUserDialog(BuildContext context, UserModel user) async {
-  return showDialog<void>(
-    context: context,
-    barrierDismissible: false, // user must tap button!
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Confirm Add Conversation'),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: const <Widget>[
-              Text('This is a demo alert dialog.'),
-              Text('Would you like to approve of this message?'),
-            ],
-          ),
+class AddUserDialog extends StatefulWidget {
+  final UserModel user;
+  const AddUserDialog({Key? key, required this.user}) : super(key: key);
+
+  @override
+  State<AddUserDialog> createState() => _AddUserDialogState();
+}
+
+class _AddUserDialogState extends State<AddUserDialog> {
+  bool loading = false;
+  Future approve() async {
+    setState(() {
+      loading = true;
+    });
+    var usersList = [
+      GetIt.I<AuthenticationService>().user.uid,
+      widget.user.uid
+    ];
+    usersList.sort();
+    var key = await GetIt.I
+        .get<CryptoService>()
+        .sharedSecretKey(widget.user.publicKey);
+    Conversation conversation = Conversation(
+      nickname: widget.user.nickname,
+      secure: false,
+      secretKey: key,
+      conversationID: usersList.join(''),
+      recipientUID: widget.user.uid,
+      displayContent: '',
+      lastMessage: DateTime.now(),
+    );
+
+    await GetIt.I.get<StorageService>().createConversation(conversation);
+    setState(() {
+      loading = false;
+    });
+    Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Confirm Add Conversation'),
+      content: SingleChildScrollView(
+        child: ListBody(
+          children: const <Widget>[
+            Text('This is a demo alert dialog.'),
+            Text('Would you like to approve of this message?'),
+          ],
         ),
-        actions: <Widget>[
+      ),
+      actions: <Widget>[
+        if (!loading)
           TextButton(
             child: const Text('Cancel'),
             onPressed: () {
               Navigator.of(context).pop();
             },
           ),
+        if (!loading)
           TextButton(
             child: const Text('Approve'),
-            onPressed: () async {
-              var usersList = [
-                GetIt.I<AuthenticationService>().user.uid,
-                user.uid
-              ];
-              usersList.sort();
-              var key = await GetIt.I
-                  .get<CryptoService>()
-                  .sharedSecretKey(user.publicKey);
-              Conversation conversation = Conversation(
-                secure: false,
-                secretKey: key,
-                conversationID: usersList.join(''),
-                recipientUID: user.uid,
-                displayContent: '',
-                lastMessage: DateTime.now(),
-              );
-
-              await GetIt.I
-                  .get<StorageService>()
-                  .createConversation(conversation);
-              Navigator.of(context).pop();
+            onPressed: () {
+              approve();
             },
           ),
-        ],
-      );
-    },
-  );
+        if (loading) CircularProgressIndicator()
+      ],
+    );
+  }
 }
 
 class QRScanScreen extends StatefulWidget {

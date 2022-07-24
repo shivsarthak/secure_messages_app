@@ -15,21 +15,24 @@ class CustomDrawer extends StatefulWidget {
 
 class _CustomDrawerState extends State<CustomDrawer> {
   AuthenticationService _user = GetIt.I.get<AuthenticationService>();
+
+  void updateUserModel() {
+    setState(() {
+      user = _user.userModel;
+    });
+  }
+
   late UserModel user;
   @override
   void initState() {
     user = _user.userModel;
-    _user.addListener(() {
-      setState(() {
-        user = _user.userModel;
-      });
-    });
+    _user.addListener(updateUserModel);
     super.initState();
   }
 
   @override
   void dispose() {
-    _user.removeListener(() {});
+    _user.removeListener(updateUserModel);
     super.dispose();
   }
 

@@ -8,6 +8,7 @@ import 'package:secretic/models/local_mesage_model.dart';
 import 'package:secretic/models/conversation_model.dart';
 import 'package:secretic/screens/widgets/qr_display.dart';
 import 'package:secretic/services/chat_service.dart';
+import 'package:secretic/services/storage_service.dart';
 import 'package:secretic/styles.dart';
 
 import '../services/authentication_service.dart';
@@ -209,12 +210,22 @@ class _ChatScreenState extends State<ChatScreen> {
       actions: [
         PopupMenuButton<String>(
           itemBuilder: (BuildContext context) {
-            return {'Clear Conversation', 'Settings'}.map((String choice) {
+            return {'Clear Conversation'}.map((String choice) {
               return PopupMenuItem<String>(
                 value: choice,
                 child: Text(choice),
               );
             }).toList();
+          },
+          onSelected: (value) async {
+            switch (value) {
+              case 'Clear Conversation':
+                final ChatService chatService =
+                    Provider.of<ChatService>(context, listen: false);
+                chatService.clear(conversation.conversationID);
+                break;
+              default:
+            }
           },
         ),
       ],

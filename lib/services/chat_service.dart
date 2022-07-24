@@ -53,6 +53,13 @@ class ChatService extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future clear(String conversationId) async {
+    messages = [];
+    notifyListeners();
+    final StorageService _store = GetIt.I.get<StorageService>();
+    await _store.deleteConversation(conversationId);
+  }
+
   Future _sendMessage(LocalMessage message) async {
     var encryptedNetworkMessage =
         await NetworkMessage.fromLocalmessage(message, conversation.secretKey);

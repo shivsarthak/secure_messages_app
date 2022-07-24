@@ -79,7 +79,7 @@ class StorageService with ChangeNotifier {
     var result = await db.rawQuery(
       '''SELECT conversationID,
         recipientUID,
-        nickname , 
+        nickname, 
         secure,
         last_message,
         display_content,
@@ -96,6 +96,16 @@ class StorageService with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> conversationExists(String id) async {
+    var result =
+        await db.query('Conversations', where: 'conversationID = "$id"');
+    if (result.isNotEmpty) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   Future toggleSecureStatus(String conversationId) async {
     await db.update('Conversations', {'secure': true},
         where: 'conversationID = "$conversationId"');
@@ -104,19 +114,23 @@ class StorageService with ChangeNotifier {
   }
 
   Future createConversation(Conversation conversation) async {
-    await db.insert('Conversations', await conversation.toJSON(DateTime.now()));
-    var networkMessage = NetworkMessage(
-      conversationID: conversation.conversationID,
-      encryptedMessage: '',
-      handshakeState: HandshakeState.request,
-      recieverUID: conversation.recipientUID,
-      senderUID: GetIt.I.get<AuthenticationService>().user.uid,
-      timestamp: DateTime.now(),
-      type: ContentType.handshake,
-    );
-    await MessageService().sendMessage(networkMessage);
-    await getConversations();
-    notifyListeners();
+    var exists = await conversationExists(conversation.conversationID);
+    if (!exists) {
+      await db.insert(
+          'Conversations', await conversation.toJSON(DateTime.now()));
+      var networkMessage = NetworkMessage(
+        conversationID: conversation.conversationID,
+        encryptedMessage: '',
+        handshakeState: HandshakeState.request,
+        recieverUID: conversation.recipientUID,
+        senderUID: GetIt.I.get<AuthenticationService>().user.uid,
+        timestamp: DateTime.now(),
+        type: ContentType.handshake,
+      );
+      await MessageService().sendMessage(networkMessage);
+      await getConversations();
+      notifyListeners();
+    }
   }
 
   Future addToRequest(ConversationRequest request) async {
@@ -125,11 +139,14 @@ class StorageService with ChangeNotifier {
     notifyListeners();
   }
 
-  Future approveRequest(ConversationRequest request, SecretKey key) async {
+  Future approveRequest(
+      ConversationRequest request, SecretKey key, String nickname) async {
     await db.transaction((txn) async {
       await txn.delete('Requests',
           where: 'conversationID = "${request.conversationID}"');
-      var data = await request.toConversation(key).toJSON(DateTime.now());
+      var conversation = request.toConversation(key);
+      conversation.setNickname(nickname);
+      var data = await conversation.toJSON(DateTime.now());
 
       await txn.insert('Conversations', data);
       return txn;
@@ -195,8 +212,8 @@ class StorageService with ChangeNotifier {
     await getConversations();
   }
 
-  deleteConversation(Conversation conversation) async {
+  deleteConversation(String conversationID) async {
     await db.rawDelete(
-        "Delete from Chat_Messages where conversationID = '${conversation.conversationID}'");
+        "Delete from Chat_Messages where conversationID = '$conversationID'");
   }
 }
