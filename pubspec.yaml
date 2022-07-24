@@ -38,11 +38,8 @@ dependencies:
   flutter_secure_storage: ^5.0.2
   get_it: ^7.2.0
   intl: ^0.17.0
+  mobile_scanner: ^2.0.0
   provider: ^6.0.2
-  qr_code_scanner:
-    git:
-      url: https://github.com/xeinebiu/qr_code_scanner.git
-      ref: fix_break_changes_platform
   qr_flutter: ^4.0.0
   sqflite: ^2.0.2
 

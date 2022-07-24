@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+
 import 'package:secretic/models/conversation_model.dart';
 import 'package:secretic/models/user_model.dart';
 import 'package:secretic/services/authentication_service.dart';
@@ -74,41 +75,6 @@ class _QRScanScreenState extends State<QRScanScreen> {
   UserModel? userData;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
-  QRViewController? controller;
-
-  @override
-  void reassemble() {
-    super.reassemble();
-    if (Platform.isAndroid) {
-      controller!.pauseCamera();
-    } else if (Platform.isIOS) {
-      controller!.resumeCamera();
-    }
-  }
-
-  @override
-  void dispose() {
-    controller?.dispose();
-    super.dispose();
-  }
-
-  void _onQRViewCreated(QRViewController controller) {
-    this.controller = controller;
-    controller.scannedDataStream.firstWhere((element) {
-      try {
-        userData = UserModel.fromJson(jsonDecode(element.code ?? ''));
-      } catch (e) {
-        //Error Occured
-      }
-      if (userData != null) {
-        return true;
-      }
-      return false;
-    }).then((value) {
-      Navigator.of(context).pop(userData);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,12 +82,25 @@ class _QRScanScreenState extends State<QRScanScreen> {
       body: Column(
         children: [
           Expanded(
-              child: QRView(
-            key: qrKey,
-            onQRViewCreated: _onQRViewCreated,
-            overlay: QrScannerOverlayShape(
-                borderRadius: 20, borderColor: Colors.blue, borderWidth: 5),
-          )),
+            child: MobileScanner(
+              allowDuplicates: false,
+              onDetect: (qr, args) {
+                if (qr.rawValue == null) {
+                  print("Failed to scan barcode");
+                } else {
+                  try {
+                    userData =
+                        UserModel.fromJson(jsonDecode(qr.rawValue ?? ''));
+                  } catch (e) {
+                    print(e);
+                  }
+                  if (userData != null) {
+                    Navigator.of(context).pop(userData);
+                  }
+                }
+              },
+            ),
+          ),
         ],
       ),
     );
